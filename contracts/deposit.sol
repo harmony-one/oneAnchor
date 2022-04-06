@@ -69,7 +69,7 @@ contract Deposit is Ownable {
         ubONEAddress = a;
     }
 
-    function getubONEAddress() public virtual onlyOwner returns (address) {
+    function getubONEAddress() public virtual onlyOwner view returns (address) {
         return ubONEAddress;
     }
 }
