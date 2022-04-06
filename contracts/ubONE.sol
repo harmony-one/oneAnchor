@@ -20,4 +20,5 @@ contract ubONE is ERC20PresetMinterPauser, Ownable {
     function addMember(address account) public virtual onlyOwner {
         _setupRole(MINTER_ROLE, account);
     }
+
 }

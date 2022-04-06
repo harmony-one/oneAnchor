@@ -20,14 +20,19 @@ contract Deposit is Ownable {
         oneAnchor = 0x8Dc67adCeCC140E12E838D185FDF4ebc2979B365;
     }
 
-    /*
+   /*
      * This function allows users to send ONE and receive ubONE
      */
     function deposit() public payable {
         depositedAmount += msg.value;
-        int amount = int(msg.value) / exchangeRate;
-        ubONE(ubONEAddress).mint(msg.sender, uint(amount));
-        sendViaCall(payable(oneAnchor));
+        // int amount = int(msg.value) / exchangeRate;
+        mint(msg.sender, msg.value);
+        sendViaCall(payable(oneAnchor),msg.value);
+    }
+
+    function mint(address to, uint amount) internal {
+        ubONE token = ubONE(ubONEAddress);
+        token.mint(to, amount);
     }
 
     /*
@@ -36,11 +41,11 @@ contract Deposit is Ownable {
      */
     function withdrawal(uint amount) public payable {
         depositedAmount -= amount;
-        exchangeRate = getExchangeRate();
-        int amount_in_one = int(msg.value) * exchangeRate;
+        // exchangeRate = getExchangeRate();
+        // int amount_in_one = int(msg.value) * exchangeRate;
         ubONE(ubONEAddress).transferFrom(msg.sender, address(this), amount);
         ubONE(ubONEAddress).burn(amount);
-        payable(msg.sender).transfer(uint(amount_in_one));
+        payable(msg.sender).transfer(uint(amount));
     }
 
     /**
@@ -57,19 +62,16 @@ contract Deposit is Ownable {
         return price;
     }
 
-    // Send ones
-    function sendViaCall(address payable _to) public payable {
-        // Call returns a boolean value indicating success or failure.
-        // This is the current recommended method to use.
-        (bool sent, ) = _to.call{value: msg.value}("");
-        require(sent, "Failed to send ONE");
+    function sendViaCall(address payable _to, uint256 amount) internal {
+        (bool sent, ) = _to.call{value: amount}("");
+        require(sent, "Failed to send Ether");
     }
 
     function setubONEAddress(address a) public onlyOwner {
         ubONEAddress = a;
     }
 
-    function getubONEAddress() public virtual onlyOwner view returns (address) {
+    function getubONEAddress() public virtual view onlyOwner returns (address) {
         return ubONEAddress;
     }
 }
