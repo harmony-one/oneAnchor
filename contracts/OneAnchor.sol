@@ -64,6 +64,7 @@ contract OneAnchor is  Ownable, AccessControl  {
     
     event Deposit(address indexed _from, uint _one, uint _aust);
     event Withdrawal(address indexed _from, uint _one, uint _ust);
+    // TODO: add clearing and payments events
 
     /*
      * This function allows users to send ONE and receive aUST
