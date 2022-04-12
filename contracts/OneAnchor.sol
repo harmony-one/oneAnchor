@@ -6,7 +6,6 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/utils/math/SafeMath.sol';
 import './interfaces/IUniswapV2Router02.sol';
 import './interfaces/IWrappedUST.sol';
-import './interfaces/IWrappedaUST.sol';
 import './interfaces/ISushiSwapLPToken.sol';
 import './Reserves.sol';
 
@@ -17,7 +16,6 @@ contract OneAnchor is Ownable {
     address private uniswapV2Router02;
     address private wONE;
     address private wUST;
-    address private waUST;
     address private clONEUSD;
     address private clUSTaUST;
     address private reserves;
@@ -29,7 +27,6 @@ contract OneAnchor is Ownable {
     AggregatorV3Interface internal priceFeedUstaUst;
     IUniswapV2Router02 internal router;
     IWrappedUST internal wust;
-    IWrappedaUST internal waust;
     Reserves internal reserve;
     ISushiSwapLPToken internal lpToken;
 
@@ -51,7 +48,6 @@ contract OneAnchor is Ownable {
         priceFeedUstaUst = AggregatorV3Interface(clUSTaUST);
         router = IUniswapV2Router02(uniswapV2Router02);
         wust = IWrappedUST(wUST);
-        waust = IWrappedaUST(waUST);
         reserve = Reserves(reserves);
         lpToken = ISushiSwapLPToken(sushiSwapLPToken);
 
@@ -68,10 +64,9 @@ contract OneAnchor is Ownable {
      */
     function deposit() public payable {
         uint value = msg.value;
-        // Get total reserves of 
         (uint USTReserves,,) = lpToken.getReserves();
         require(USTReserves > 0, "There are not enough UST reserves in the Liquidity Pool");
-        uint OneAmountInUST = uint(getExchangeRate(priceFeedOneUsd)).mul(USTReserves);
+        uint OneAmountInUST = uint(getExchangeRate(priceFeedOneUsd)).mul(value);
         require(OneAmountInUST < USTReserves, "There are not enough UST reserves in the Liquidity Pool");
         uint[] memory finalValues = router.swapExactETHForTokens{value: value}(1000, path, reserves, block.timestamp + 120 seconds);
         uint finalUSTValue = finalValues[1];
@@ -90,10 +85,12 @@ contract OneAnchor is Ownable {
      */
     function withdrawal(uint amount) public payable {
         require(amount > 0, "Withdrawal amount must be greater than 0");
-        totalDeposits -= amount;
+        (,uint aUSTReserves,) = lpToken.getReserves();
+        require(aUSTReserves > 0, "There are not enough aUST reserves in the Liquidity Pool");
         uint aUSTAmountInUST = uint(getExchangeRate(priceFeedUstaUst)).div(amount);
-        bool didPay = pay(msg.sender, uint(aUSTAmountInUST), 1);
-        require(didPay == true, "UST were not transfer to the user");
+        uint aUSTAmountInONE = uint(getExchangeRate(priceFeedOneUsd)).div(aUSTAmountInUST);
+        bool didPay = pay(msg.sender, uint(aUSTAmountInONE), 1);
+        require(didPay == true, "ONE were not transfer to the user");
         emit Withdrawal(msg.sender, msg.value, aUSTAmountInUST);
     }
     /*
@@ -116,16 +113,15 @@ contract OneAnchor is Ownable {
     function pay(address to, uint amount, uint asset) internal returns (bool) {
         bool didTransfer = false;
         if (asset == 0) {
-            didTransfer = waust.transferFrom(reserves, to, amount);
+            didTransfer = reserve.payaUST(to, amount);
             return didTransfer;
         } else if (asset == 1) {
-            didTransfer = wust.transferFrom(reserves, to, amount);
+            didTransfer = reserve.payONE(to, amount);
             return didTransfer;
         } else {
             return false;
         }
     }
-    
 
     /**
      * Returns Pair exchange rate
@@ -139,11 +135,6 @@ contract OneAnchor is Ownable {
             
         ) = cl.latestRoundData();
         return price;
-    }
-
-    function sendViaCall(address payable _to, uint256 amount) internal {
-        (bool sent, ) = _to.call{value: amount}("");
-        require(sent, "Failed to send Ether");
     }
 
 }

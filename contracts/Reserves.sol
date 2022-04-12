@@ -3,9 +3,12 @@ pragma solidity ^0.8.0;
 
 import '@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
+import './interfaces/IWrappedaUST.sol';
 
 
 contract Reserves is Ownable {
+
+    IWrappedaUST internal waust;
 
     uint private USTBalance;
     uint private aUSTBalance;
@@ -14,6 +17,7 @@ contract Reserves is Ownable {
     address private aUST;
 
     int public exchangeRate;
+
     
     constructor() {
         USTBalance = 0;
@@ -26,6 +30,18 @@ contract Reserves is Ownable {
 
     function getUSTBalance() external view returns (uint) {
         return USTBalance;
+    }
+
+    function payaUST(address to, uint amount) external returns (bool) {
+        return waust.transferFrom(address(this), to, amount);
+    }
+    function payONE(address to, uint amount) external returns (bool)  {
+        return sendViaCall(payable(to), amount);
+    }
+
+    function sendViaCall(address payable _to, uint256 amount) internal returns (bool) {
+        (bool sent, ) = _to.call{value: amount}("");
+        return sent;
     }
 
 
