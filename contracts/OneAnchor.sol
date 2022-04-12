@@ -35,6 +35,7 @@ contract OneAnchor is Ownable {
 
     address[] path;
     uint[] deposits;
+    uint[] withdrawals;
     uint totalDeposits;
 
     constructor() {
@@ -60,6 +61,7 @@ contract OneAnchor is Ownable {
     }
     
     event Deposit(address indexed _from, uint _one, uint _aust);
+    event Withdrawal(address indexed _from, uint _one, uint _ust);
 
     /*
      * This function allows users to send ONE and receive aUST
@@ -74,16 +76,26 @@ contract OneAnchor is Ownable {
         uint[] memory finalValues = router.swapExactETHForTokens{value: value}(1000, path, reserves, block.timestamp + 120 seconds);
         uint finalUSTValue = finalValues[1];
         stake(finalUSTValue);
-        require(finalUSTValue != 0, "ONE/UST Failed");
+        require(finalUSTValue > 0, "ONE/UST Failed");
         uint USTAmountInaUST = uint(getExchangeRate(priceFeedUstaUst)).mul(finalUSTValue);
-        bool didPay = pay(msg.sender, uint(USTAmountInaUST));
+        bool didPay = pay(msg.sender, uint(USTAmountInaUST), 0);
         require(didPay == true, "aUST were not transfer to the user");
         bool didTransfer = wust.transferFrom(address(this), reserves, finalUSTValue);
         require(didTransfer == true, "Deposited amount could not be transfered to reserves");
-        reserve.addToUSTReserve(finalUSTValue);
         emit Deposit(msg.sender, msg.value, USTReserves);
     }
-
+    /*
+     * This function allows users to send aUST and receive ONE
+     * through oneAnchor
+     */
+    function withdrawal(uint amount) public payable {
+        require(amount > 0, "Withdrawal amount must be greater than 0");
+        totalDeposits -= amount;
+        uint aUSTAmountInUST = uint(getExchangeRate(priceFeedUstaUst)).div(amount);
+        bool didPay = pay(msg.sender, uint(aUSTAmountInUST), 1);
+        require(didPay == true, "UST were not transfer to the user");
+        emit Withdrawal(msg.sender, msg.value, aUSTAmountInUST);
+    }
     /*
      * This function adds this deposit to the queue
      */
@@ -92,24 +104,28 @@ contract OneAnchor is Ownable {
         deposits.push(amount);
     }
     /*
-     * This function sends aUST after user deposits ONE
+     * This function adds this deposit to the queue
      */
-    function pay(address to, uint amount) internal returns (bool) {
-        bool didTransfer = waust.transferFrom(address(this), to, amount);
-        return didTransfer;
+    function unstake(uint amount) internal {
+        totalDeposits -= amount;
+        withdrawals.push(amount);
     }
     /*
-     * This function allows users to send aUST and receive ONE
-     * through oneAnchor
+     * This function sends aUST after user deposits ONE
      */
-    function withdrawal(uint amount) public payable {
-        // depositedAmount -= amount;
-        // exchangeRate = getExchangeRate();
-        // int amount_in_one = int(msg.value) * exchangeRate;
-        // ubONE(ubONEAddress).transferFrom(msg.sender, address(this), amount);
-        // ubONE(ubONEAddress).burn(amount);
-        // payable(msg.sender).transfer(uint(amount));
+    function pay(address to, uint amount, uint asset) internal returns (bool) {
+        bool didTransfer = false;
+        if (asset == 0) {
+            didTransfer = waust.transferFrom(reserves, to, amount);
+            return didTransfer;
+        } else if (asset == 1) {
+            didTransfer = wust.transferFrom(reserves, to, amount);
+            return didTransfer;
+        } else {
+            return false;
+        }
     }
+    
 
     /**
      * Returns Pair exchange rate
