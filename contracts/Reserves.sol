@@ -7,8 +7,8 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 
 contract Reserves is Ownable {
 
-    int private USTBalance;
-    int private aUSTBalance;
+    uint private USTBalance;
+    uint private aUSTBalance;
 
     address private UST;
     address private aUST;
@@ -20,9 +20,13 @@ contract Reserves is Ownable {
         aUSTBalance = 0;
     }
 
-    function addToUSTReserve(uint amount) external view onlyOwner {}
+    function addToUSTReserve(uint amount) external view {}
 
-    function removeFromUSTReserve() external view onlyOwner {}
+    function removeFromUSTReserve() external view {}
+
+    function getUSTBalance() external view returns (uint) {
+        return USTBalance;
+    }
 
 
 }
