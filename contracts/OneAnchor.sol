@@ -161,7 +161,7 @@ contract OneAnchor is  Ownable, AccessControl  {
      * get the value of the next transaction in the queue
      */
     function getNextTransaction(uint action) external view returns (uint) {
-        require(hasRole(CLEARING_ROLE, msg.sender), "Caller is not an admin");
+        require(hasRole(CLEARING_ROLE, msg.sender), "Caller cannot access this information");
         if (action == 0){
             return deposits[0];
         } else if (action == 1){
@@ -174,7 +174,7 @@ contract OneAnchor is  Ownable, AccessControl  {
      * clear the next transaction in the queue
      */
     function clearNextTransaction(uint action) external {
-        require(hasRole(CLEARING_ROLE, msg.sender), "Caller is not an admin");
+        require(hasRole(CLEARING_ROLE, msg.sender), "Caller cannot clear transactions");
         if (action == 0){
             reserve.withdrawUST(deposits[0]);
             
