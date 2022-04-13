@@ -196,6 +196,13 @@ contract OneAnchor is  Ownable, AccessControl  {
         } 
     }
     /**
+     * Return `true` if the `account` belongs to the community.
+     */
+    function isMember(address account) public virtual view returns (bool)
+    {
+        return hasRole(CLEARING_ROLE, account);
+    }
+    /**
      * set the clearing role (intended for reserves contract)
      */
     function setClearingRole(address admin) external onlyOwner {

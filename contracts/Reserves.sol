@@ -114,6 +114,13 @@ contract Reserves is Ownable, AccessControl {
         earnAccount = account;
     }
     /**
+     * Return `true` if the `account` belongs to the community.
+     */
+    function isMember(address account) public virtual view returns (bool)
+    {
+        return hasRole(OWNER_ROLE, account);
+    }
+    /**
      * set the owner role (intended for oneAnchor contract)
      */
     function setOnwerRole(address owner) external onlyOwner {
