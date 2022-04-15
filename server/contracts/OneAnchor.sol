@@ -8,7 +8,7 @@ import "@openzeppelin/contracts-upgradeable/interfaces/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "./interfaces/IUniswapV2Router02.sol";
 import "./interfaces/ISushiSwapLPToken.sol";
-import "./Reserves.sol";
+import "./Reserve.sol";
 
 contract OneAnchor is OwnableUpgradeable, AccessControlUpgradeable {
     using SafeMathUpgradeable for uint256;
@@ -29,7 +29,7 @@ contract OneAnchor is OwnableUpgradeable, AccessControlUpgradeable {
     IUniswapV2Router02 internal router;
     IERC20Upgradeable internal wust;
     IERC20Upgradeable internal waust;
-    Reserves internal reserve;
+    Reserve internal reserve;
     ISushiSwapLPToken internal lpToken;
 
     address[] path;
@@ -38,7 +38,7 @@ contract OneAnchor is OwnableUpgradeable, AccessControlUpgradeable {
 
     bytes32 public constant CLEARING_ROLE = keccak256("CLEARING_ROLE");
 
-    function __OneAnchor_init() internal onlyInitializing {
+    function __OneAnchor_init(address _reserve) external onlyInitializing {
         __Ownable_init();
         // addresses
         clONEUSD = 0xcEe686F89bc0dABAd95AEAAC980aE1d97A075FAD;
@@ -53,7 +53,7 @@ contract OneAnchor is OwnableUpgradeable, AccessControlUpgradeable {
         router = IUniswapV2Router02(uniswapV2Router02);
         wust = IERC20Upgradeable(wUST);
         waust = IERC20Upgradeable(waUST);
-        reserve = Reserves(reserves);
+        reserve = Reserve(_reserve);
         lpToken = ISushiSwapLPToken(sushiSwapLPToken);
 
         path = new address[](2);

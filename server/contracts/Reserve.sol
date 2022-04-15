@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/interfaces/IERC20Upgradeable.sol";
 
-contract Reserves is OwnableUpgradeable, AccessControlUpgradeable {
+contract Reserve is OwnableUpgradeable, AccessControlUpgradeable {
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
     bytes32 public constant EARN_ROLE = keccak256("EARN_ROLE");
 
@@ -20,10 +20,8 @@ contract Reserves is OwnableUpgradeable, AccessControlUpgradeable {
 
     address private earnAccount;
 
-    constructor() {
-        USTBalance = 0;
-        aUSTBalance = 0;
-        ONEBalance = 0;
+    function __Reserve_init() external onlyInitializing {
+        __Ownable_init();
     }
 
     /*
