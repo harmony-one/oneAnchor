@@ -18,6 +18,8 @@ contract Reserves is Ownable, AccessControl {
     uint private aUSTBalance;
     uint private ONEBalance;
 
+    mapping(address => int) private balances;
+
     address private earnAccount;
     
     constructor() {
@@ -65,7 +67,7 @@ contract Reserves is Ownable, AccessControl {
     }
     /*
      * Pay users.
-     * Send assets to users
+     * Send assets to users when they deposit
      */
     function payaUST(address to, uint amount) external returns (bool) {
         require(hasRole(OWNER_ROLE, msg.sender), "Caller does not own these reserves");
@@ -84,7 +86,7 @@ contract Reserves is Ownable, AccessControl {
     }
     /*
      * Pay users.
-     * Send assets to users
+     * Send assets to users when they withdraw
      */
     function withdrawaUST(uint amount) external returns (bool) {
         require(hasRole(OWNER_ROLE, msg.sender), "Caller does not own these reserves");
@@ -99,6 +101,12 @@ contract Reserves is Ownable, AccessControl {
         require(didTransfer == true, "Transfer failed");
         removeFromaUSTReserve(amount);
         return didTransfer;
+    }
+    /*
+     * Update Accountholders balances
+     */
+    function updateBalance(address account, int amount) public {
+      balances[account] += amount;
     }
     /*
      * Send ONEs to address.

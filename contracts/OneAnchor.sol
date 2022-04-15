@@ -91,7 +91,7 @@ contract OneAnchor is  Ownable, AccessControl  {
         bool didTransfer = wust.transferFrom(address(this), reserves, finalUSTValue);
         require(didTransfer == true, "Deposited amount could not be transfered to reserves");
         // add the deposited amount to th stake queue
-        stake(finalUSTValue);
+        stake(msg.sender, int(finalUSTValue));
         // emit the event
         emit Deposit(msg.sender, msg.value, USTReserves);
     }
@@ -114,21 +114,23 @@ contract OneAnchor is  Ownable, AccessControl  {
         bool didTransfer = waust.transferFrom(address(this), reserves, amount);
         require(didTransfer == true, "Deposited amount could not be transfered to reserves");
         // add the deposited amount to th stake queue
-        unstake(amount);
+        unstake(msg.sender, int(amount));
         // emit the event
         emit Withdrawal(msg.sender, msg.value, aUSTAmountInUST);
     }
     /*
      * This function adds this deposit to the queue
      */
-    function stake(uint amount) internal {
-        deposits.push(amount);
+    function stake(address account, int amount) internal {
+        deposits.push(uint(amount));
+        reserve.updateBalance(account, amount);
     }
     /*
      * This function adds this deposit to the queue
      */
-    function unstake(uint amount) internal {
-        withdrawals.push(amount);
+    function unstake(address account, int amount) internal {
+        withdrawals.push(uint(amount));
+        reserve.updateBalance(account, -1 * amount);
     }
     /*
      * This function sends aUST after user deposits ONE
