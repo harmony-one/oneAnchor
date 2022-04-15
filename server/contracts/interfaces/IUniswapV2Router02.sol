@@ -95,10 +95,6 @@ interface IUniswapV2Router01 {
     function getAmountsIn(uint amountOut, address[] calldata path) external view returns (uint[] memory amounts);
 }
 
-// File: contracts/uniswapv2/interfaces/IUniswapV2Router02.sol
-
-pragma solidity >=0.6.2;
-
 
 interface IUniswapV2Router02 is IUniswapV2Router01 {
     function removeLiquidityETHSupportingFeeOnTransferTokens(
