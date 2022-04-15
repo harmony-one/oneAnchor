@@ -1,0 +1,35 @@
+@mixin flex-wrap() {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+@mixin flex-column() {
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin flex-center() {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin image-background($image, $bg-size: "unset") {
+  background-image: url("../assets/images/#{$image}");
+  background-size: #{$bg-size};
+  background-repeat: no-repeat;
+}
+
+// Responsive
+@mixin responsive-max($max-width, $orientation: "") {
+  @media all and (max-device-width: #{$max-width}) and (orientation: #{$orientation}) and (-webkit-min-device-pixel-ratio: 1) {
+    @content;
+  }
+}
+
+// Desktop
+@mixin responsive-min($min-width) {
+  @media all and  (min-device-width: #{$min-width}) and (-webkit-min-device-pixel-ratio: 1) {
+    @content;
+  }
+}

@@ -1,0 +1,31 @@
+@import "../assets/scss/styles.scss";
+
+#root {
+  min-height: 100vh;
+}
+
+.root {
+  &--light {
+    background-color: $white;
+    @include image-background($image: "bg-emblem.svg");
+    background-position: right bottom;
+    color: $black;
+  }
+
+  &--dark {
+    background-color: $black;
+    @include image-background($image: "bg-emblem-dark.svg");
+    background-position: right bottom;
+    color: $white;
+  }
+}
+
+.container {
+  @include flex-wrap();
+  margin: 0 auto;
+  width: 80em;
+}
+
+.main {
+  width: 100%;
+}
