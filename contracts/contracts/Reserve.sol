@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/interfaces/IERC20Upgradeable.sol";
 
 contract Reserve is OwnableUpgradeable, AccessControlUpgradeable {
-    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
     bytes32 public constant EARN_ROLE = keccak256("EARN_ROLE");
 
     IERC20Upgradeable internal waust;
@@ -19,6 +19,14 @@ contract Reserve is OwnableUpgradeable, AccessControlUpgradeable {
     mapping(address => int256) private balances;
 
     address private earnAccount;
+
+    modifier onlyOperator() {
+        require(
+            hasRole(OPERATOR_ROLE, msg.sender),
+            "Caller is not an Operator"
+        );
+        _;
+    }
 
     function __Reserve_init() external onlyInitializing {
         __Ownable_init();
@@ -56,29 +64,17 @@ contract Reserve is OwnableUpgradeable, AccessControlUpgradeable {
      * Get Reserve amounts.
      * Get the balance of the different assets balances
      */
-    function getUSTBalance() external view returns (uint256) {
+    function getUSTBalance() external onlyOperator view returns (uint256) {
         //Remember that no data is every actually private on the blockchain
         //Someone can always pull this value out of the contract if they want to
-        require(
-            hasRole(OWNER_ROLE, msg.sender),
-            "Caller does not have access to this function"
-        );
         return USTBalance;
     }
 
-    function getaUSTBalance() external view returns (uint256) {
-        require(
-            hasRole(OWNER_ROLE, msg.sender),
-            "Caller does not have access to this function"
-        );
+    function getaUSTBalance() external onlyOperator view returns (uint256) {
         return aUSTBalance;
     }
 
-    function getONEBalance() external view returns (uint256) {
-        require(
-            hasRole(OWNER_ROLE, msg.sender),
-            "Caller does not have access to this function"
-        );
+    function getONEBalance() external onlyOperator view returns (uint256) {
         return ONEBalance;
     }
 
@@ -86,37 +82,43 @@ contract Reserve is OwnableUpgradeable, AccessControlUpgradeable {
      * Pay users.
      * Send assets to users when they deposit
      */
-    function payaUST(address to, uint256 amount) external returns (bool) {
-        require(
-            hasRole(OWNER_ROLE, msg.sender),
-            "Caller does not own these reserves"
-        );
+    function payaUST(address to, uint256 amount) external onlyOperator returns (bool) {
         bool didTransfer = waust.transferFrom(address(this), to, amount);
         require(didTransfer == true, "Payment failed");
         removeFromaUSTReserve(amount);
         return didTransfer;
     }
 
-    function payONE(address to, uint256 amount) external returns (bool) {
-        require(
-            hasRole(OWNER_ROLE, msg.sender),
-            "Caller does not own these reserves"
-        );
+    function payONE(address to, uint256 amount) external onlyOperator returns (bool) {
         bool didTransfer = sendViaCall(payable(to), amount);
         require(didTransfer == true, "Payment failed");
         removeFromONEReserve(amount);
         return didTransfer;
     }
 
+    function operatorWithdrawUST(uint256 amount)
+        external
+        onlyOperator
+    {
+
+    }
+
+    function operatorWithdrawAUST(uint256 amount)
+        external
+        onlyOperator
+    {
+
+    }
+
     /*
      * Pay users.
      * Send assets to users when they withdraw
      */
-    function withdrawaUST(uint256 amount) external returns (bool) {
-        require(
-            hasRole(OWNER_ROLE, msg.sender),
-            "Caller does not own these reserves"
-        );
+    function withdrawaUST(uint256 amount)
+        external
+        onlyOperator
+        returns (bool)
+    {
         bool didTransfer = waust.transferFrom(
             address(this),
             earnAccount,
@@ -127,11 +129,11 @@ contract Reserve is OwnableUpgradeable, AccessControlUpgradeable {
         return didTransfer;
     }
 
-    function withdrawUST(uint256 amount) external returns (bool) {
-        require(
-            hasRole(OWNER_ROLE, msg.sender),
-            "Caller does not own these reserves"
-        );
+    function withdrawUST(uint256 amount)
+        external
+        onlyOperator
+        returns (bool)
+    {
         bool didTransfer = waust.transferFrom(
             address(this),
             earnAccount,
