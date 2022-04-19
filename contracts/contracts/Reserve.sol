@@ -10,7 +10,9 @@ contract Reserve is OwnableUpgradeable, AccessControlUpgradeable {
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
     bytes32 public constant EARN_ROLE = keccak256("EARN_ROLE");
 
-    IERC20Upgradeable internal waust;
+    IERC20Upgradeable wAUST;
+    IERC20Upgradeable wUST;
+
 
     uint256 public USTBalance;
     uint256 public aUSTBalance;
@@ -27,6 +29,14 @@ contract Reserve is OwnableUpgradeable, AccessControlUpgradeable {
         );
         _;
     }
+
+
+    constructor(address _wAUST, address _wUST)
+    {
+        wAUST = IERC20Upgradeable(_wAUST);
+        wUST = IERC20Upgradeable(_wUST);
+    }
+
 
     function __Reserve_init() external onlyInitializing {
         __Ownable_init();
@@ -81,8 +91,17 @@ contract Reserve is OwnableUpgradeable, AccessControlUpgradeable {
     function withdrawUSTOperator(uint256 amount)
         external
         onlyOperator
+        returns (bool)
     {
+        bool didTransfer = wUST.transferFrom(
+            address(this),
+            msg.sender,
+            amount
+        );
 
+        require(didTransfer == true, "Payment failed");
+        removeFromUSTReserve(amount);
+        return didTransfer;
     }
 
     function withdrawAUSOperatorT(uint256 amount)
