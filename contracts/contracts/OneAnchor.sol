@@ -82,16 +82,26 @@ contract OneAnchor is OwnableUpgradeable, AccessControlUpgradeable {
         uint256 OneAmountInUST = uint256(getExchangeRate(priceFeedOneUsd)).mul(
             value
         );
+        //This require wont tell the full story since slippage will move the pool when a swap happens
+        //But it seems to be ok since there is a later require for this
         require(
             OneAmountInUST < USTReserves,
             "There are not enough UST reserves in the Liquidity Pool"
         );
         // Swap ONE for wrapped UST in Sushi
+        // Why are we hard coding our min out to 1000? I guess its in wei so it wont really matter but still
+        // Since reserves is the to value tokens will get transfered directly to reserves contract
         uint256[] memory finalValues = router.swapExactETHForTokens{
             value: value
         }(1000, path, reserves, block.timestamp + 120 seconds);
         uint256 finalUSTValue = finalValues[1];
-        require(finalUSTValue > 0, "ONE/UST Failed");
+
+        //Replace the check for above 0 with this, check for minimum of 75% of expected UST value swapped
+        require(
+            finalUSTValue * 75 / 100 >  OneAmountInUST,
+            "Slippage on Swap Too Large"
+        );
+
         // Calculate the number of aUST that must be sent to the user
         // to the user and send them to it
         uint256 USTAmountInaUST = uint256(getExchangeRate(priceFeedUstaUst))

@@ -57,6 +57,8 @@ contract Reserve is OwnableUpgradeable, AccessControlUpgradeable {
      * Get the balance of the different assets balances
      */
     function getUSTBalance() external view returns (uint256) {
+        //Remember that no data is every actually private on the blockchain
+        //Someone can always pull this value out of the contract if they want to
         require(
             hasRole(OWNER_ROLE, msg.sender),
             "Caller does not have access to this function"
@@ -175,7 +177,7 @@ contract Reserve is OwnableUpgradeable, AccessControlUpgradeable {
     /**
      * set the owner role (intended for oneAnchor contract)
      */
-    function setOnwerRole(address owner) external onlyOwner {
+    function setOwnerRole(address owner) external onlyOwner {
         _setupRole(OWNER_ROLE, owner);
     }
 }
