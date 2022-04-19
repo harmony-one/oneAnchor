@@ -12,9 +12,9 @@ contract Reserve is OwnableUpgradeable, AccessControlUpgradeable {
 
     IERC20Upgradeable internal waust;
 
-    uint256 private USTBalance;
-    uint256 private aUSTBalance;
-    uint256 private ONEBalance;
+    uint256 public USTBalance;
+    uint256 public aUSTBalance;
+    uint256 public ONEBalance;
 
     mapping(address => int256) private balances;
 
@@ -61,24 +61,6 @@ contract Reserve is OwnableUpgradeable, AccessControlUpgradeable {
     }
 
     /*
-     * Get Reserve amounts.
-     * Get the balance of the different assets balances
-     */
-    function getUSTBalance() external onlyOperator view returns (uint256) {
-        //Remember that no data is every actually private on the blockchain
-        //Someone can always pull this value out of the contract if they want to
-        return USTBalance;
-    }
-
-    function getaUSTBalance() external onlyOperator view returns (uint256) {
-        return aUSTBalance;
-    }
-
-    function getONEBalance() external onlyOperator view returns (uint256) {
-        return ONEBalance;
-    }
-
-    /*
      * Pay users.
      * Send assets to users when they deposit
      */
@@ -96,14 +78,28 @@ contract Reserve is OwnableUpgradeable, AccessControlUpgradeable {
         return didTransfer;
     }
 
-    function operatorWithdrawUST(uint256 amount)
+    function withdrawUSTOperator(uint256 amount)
         external
         onlyOperator
     {
 
     }
 
-    function operatorWithdrawAUST(uint256 amount)
+    function withdrawAUSOperatorT(uint256 amount)
+        external
+        onlyOperator
+    {
+
+    }
+
+    function depositUSTOperator(uint256 amount)
+        external
+        onlyOperator
+    {
+
+    }
+
+    function depositAUSTOperator(uint256 amount)
         external
         onlyOperator
     {
