@@ -92,39 +92,21 @@ contract OneAnchor is Reserve {
         // Since reserves is the to value tokens will get transfered directly to reserves contract
         uint256[] memory finalValues = router.swapExactETHForTokens{
             value: value
-        }(1000, path, reserves, block.timestamp + 120 seconds);
+        }(1000, path, address(this), block.timestamp + 120 seconds);
         uint256 finalUSTValue = finalValues[1];
 
         //Replace the check for above 0 with this, check for minimum of 75% of expected UST value swapped
         require(
-            finalUSTValue * 75 / 100 >  OneAmountInUST,
+            finalUSTValue * 95 / 100 >  OneAmountInUST,
             "Slippage on Swap Too Large"
         );
 
         // Calculate the number of aUST that must be sent to the user
         // to the user and send them to it
-        uint256 USTAmountInaUST = uint256(getExchangeRate(priceFeedUstaUst))
-            .mul(finalUSTValue);
+        uint256 USTAmountInaUST = getBackwardValueFromOracle(finalUSTValue, priceFeedUstaUst);
 
+        payAUST(msg.sender, USTAmountInaUST);
 
-
-
-        bool didPay = pay(msg.sender, uint256(USTAmountInaUST), 0);
-        require(didPay == true, "aUST were not transfer to the user");
-        // move the USTs to the reserves contract
-        bool didTransfer = wUST.transferFrom(
-            address(this),
-            reserves,
-            finalUSTValue
-        );
-        require(
-            didTransfer == true,
-            "Deposited amount could not be transfered to reserves"
-        );
-        // add the deposited amount to th stake queue
-        stake(msg.sender, int256(finalUSTValue));
-        // emit the event
-        emit Deposit(msg.sender, msg.value, USTReserves);
     }
 
 
@@ -136,31 +118,34 @@ contract OneAnchor is Reserve {
     */
     function withdrawal(uint256 amount) public payable {
         require(amount > 0, "Withdrawal amount must be greater than 0");
-        // Get aUST Reserves in LP
-        (, uint256 aUSTReserves, ) = lpToken.getReserves();
+
+        uint256 ustFromAust = getForwardValueFromOracle(amount, priceFeedUstaUst);
+        takeAUST(msg.sender, amount);
+
+        uint256 predictedWithdrawValueInOne = getForwardValueFromOracle(ustFromAust, priceFeedOneUsd);
+
+        address[] memory inversePath = new address[](2);
+        inversePath[0] = path[1];
+        inversePath[1] = path[0];
+
+        wUST.approve(address(router), ustFromAust);
+
+        uint256[] memory finalValues = router.swapExactTokensForETH(
+            ustFromAust,
+            predictedWithdrawValueInOne * 95 / 100, //maximum 5% slippage
+            inversePath,
+            address(this),
+            block.timestamp + 120 seconds
+        );
+
+        uint256 finalONEValue = finalValues[1];
+
+        bool didSend = sendViaCall(payable(msg.sender), finalONEValue);
+
         require(
-            aUSTReserves > 0,
-            "There are not enough aUST reserves in the Liquidity Pool"
+            didSend,
+            "ONE send failed"
         );
-        // Calculate the number of ONEs that must be sent to user
-        // and send them to it
-        uint256 aUSTAmountInUST = uint256(getExchangeRate(priceFeedUstaUst))
-            .div(amount);
-        uint256 aUSTAmountInONE = uint256(getExchangeRate(priceFeedOneUsd)).div(
-            aUSTAmountInUST
-        );
-        bool didPay = pay(msg.sender, uint256(aUSTAmountInONE), 1);
-        require(didPay == true, "ONE were not transfer to the user");
-        // move the aUSTs to the reserves contract
-        bool didTransfer = waust.transferFrom(address(this), reserves, amount);
-        require(
-            didTransfer == true,
-            "Deposited amount could not be transfered to reserves"
-        );
-        // add the deposited amount to the stake queue
-        unstake(msg.sender, int256(amount));
-        // emit the event
-        emit Withdrawal(msg.sender, msg.value, aUSTAmountInUST);
     }
 
 
@@ -179,35 +164,15 @@ contract OneAnchor is Reserve {
         if(inputToken == address(wUST)){
             outputTokenAmount = getBackwardValueFromOracle(amount, priceFeedUstaUst);
             takeUST(msg.sender, amount);
-            payaUST(msg.sender, outputTokenAmount);
+            payAUST(msg.sender, outputTokenAmount);
         }
         else{
             outputTokenAmount = getForwardValueFromOracle(amount, priceFeedUstaUst);
-            takeUST(msg.sender, amount);
+            takeAUST(msg.sender, amount);
             payUST(msg.sender, outputTokenAmount);
         }
     }
 
-
-    /*
-     * This function sends aUST after user deposits ONE
-     */
-    function pay(
-        address to,
-        uint256 amount,
-        uint256 asset
-    ) internal returns (bool) {
-        bool didTransfer = false;
-        if (asset == 0) {
-            didTransfer = payaUST(to, amount);
-            return didTransfer;
-        } else if (asset == 1) {
-            didTransfer = payONE(to, amount);
-            return didTransfer;
-        } else {
-            return false;
-        }
-    }
 
     /**
      * Returns Pair exchange rate
@@ -216,6 +181,7 @@ contract OneAnchor is Reserve {
     function getForwardValueFromOracle(uint256 _amountOther, AggregatorV3Interface cl)
         public
         view
+        returns(uint256)
     {
         uint8 oracleDecimals = cl.decimals();
         (, int256 price, , , ) = cl.latestRoundData();
@@ -225,6 +191,7 @@ contract OneAnchor is Reserve {
     function getBackwardValueFromOracle(uint256 _amountUST, AggregatorV3Interface cl)
         public
         view
+        returns(uint256)
     {
         uint8 oracleDecimals = cl.decimals();
         (, int256 price, , , ) = cl.latestRoundData();

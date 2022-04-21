@@ -4,7 +4,7 @@ pragma solidity 0.8.13;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/interfaces/IERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 /*
     So what we essentially want is a service that will migrate UST to tera and
@@ -33,7 +33,7 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradable.s
 */
 
 
-contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradable {
+contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
@@ -88,7 +88,7 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
      * Pay users.
      * Send assets to users when they deposit
      */
-    function payaUST(address to, uint256 amount) internal returns (bool) {
+    function payAUST(address to, uint256 amount) internal returns (bool) {
         bool didTransfer = wAUST.transferFrom(address(this), to, amount);
         require(didTransfer == true, "Payment failed");
         removeFromaUSTReserve(amount);
@@ -102,24 +102,17 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
         return didTransfer;
     }
 
-    function takeaUST(address from, uint256 amount) internal returns (bool) {
+    function takeAUST(address from, uint256 amount) internal returns (bool) {
         bool didTransfer = wAUST.transferFrom(from, address(this), amount);
         require(didTransfer == true, "Payment failed");
-        removeFromaUSTReserve(amount);
+        addToaUSTReserve(amount);
         return didTransfer;
     }
 
     function takeUST(address from, uint256 amount) internal returns (bool) {
         bool didTransfer = wUST.transferFrom(from, address(this), amount);
         require(didTransfer == true, "Payment failed");
-        removeFromaUSTReserve(amount);
-        return didTransfer;
-    }
-
-    function payONE(address to, uint256 amount) internal returns (bool) {
-        bool didTransfer = sendViaCall(payable(to), amount);
-        require(didTransfer == true, "Payment failed");
-        removeFromONEReserve(amount);
+        addToUSTReserve(amount);
         return didTransfer;
     }
 
