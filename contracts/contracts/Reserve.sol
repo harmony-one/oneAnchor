@@ -144,7 +144,7 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
         );
         require(didTransfer == true, "Transfer failed");
 
-        removeFromUSTReserve(amount);
+        removeFromaUSTReserve(amount);
         return didTransfer;
     }
 
@@ -195,7 +195,7 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
     /**
      * Return `true` if the `account` belongs to the community.
      */
-    function isOperator(address account) public view virtual returns (bool) {
+    function isOperator(address account) public view returns (bool) {
         return hasRole(OPERATOR_ROLE, account);
     }
 

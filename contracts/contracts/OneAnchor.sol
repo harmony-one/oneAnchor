@@ -92,7 +92,7 @@ contract OneAnchor is Reserve {
         uint256[] memory finalValues = router.swapExactETHForTokens{
             value: value
         }(
-            finalUSTValue * 95 / 100,
+            OneAmountInUST * 95 / 100,
             path,
             address(this),
             block.timestamp + 120 seconds
