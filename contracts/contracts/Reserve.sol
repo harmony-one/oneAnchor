@@ -98,14 +98,14 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
      * Pay users.
      * Send assets to users when they deposit
      */
-    function payaUST(address to, uint256 amount) external onlyOperator returns (bool) {
+    function payaUST(address to, uint256 amount) internal returns (bool) {
         bool didTransfer = wAUST.transferFrom(address(this), to, amount);
         require(didTransfer == true, "Payment failed");
         removeFromaUSTReserve(amount);
         return didTransfer;
     }
 
-    function payONE(address to, uint256 amount) external onlyOperator returns (bool) {
+    function payONE(address to, uint256 amount) internal returns (bool) {
         bool didTransfer = sendViaCall(payable(to), amount);
         require(didTransfer == true, "Payment failed");
         removeFromONEReserve(amount);
@@ -131,6 +131,7 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
     function withdrawAUSTOperator(uint256 amount)
         external
         onlyOperator
+        returns (bool)
     {
         bool didTransfer = wAUST.transferFrom(
             address(this),
@@ -147,6 +148,7 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
     function depositUSTOperator(uint256 amount)
         external
         onlyOperator
+        returns (bool)
     {
         bool didTransfer = wUST.transferFrom(
             msg.sender,
@@ -162,6 +164,7 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
     function depositAUSTOperator(uint256 amount)
         external
         onlyOperator
+        returns (bool)
     {
         bool didTransfer = wUST.transferFrom(
             msg.sender,

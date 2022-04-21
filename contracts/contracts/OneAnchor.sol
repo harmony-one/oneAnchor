@@ -27,12 +27,11 @@ contract OneAnchor is Reserve {
     address[] path;
 
     //should an initializing function be external?
-    function __OneAnchor_init(address _reserve) external onlyInitializing {
+    function __OneAnchor_init() external onlyInitializing {
         // addresses
         clONEUSD = 0xcEe686F89bc0dABAd95AEAAC980aE1d97A075FAD;
         clUSTaUST = 0xcEe686F89bc0dABAd95AEAAC980aE1d97A075FAD;
         uniswapV2Router02 = 0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506;
-        wUST = 0x224e64ec1BDce3870a6a6c777eDd450454068FEC;
         wONE = 0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a;
         sushiSwapLPToken = 0x4dABF6C57A8beA012F1EAa1259Ceed2a62AC7df2;
         //contracts
@@ -45,13 +44,17 @@ contract OneAnchor is Reserve {
         waust = IERC20Upgradeable(waUST); //waUST does not seem to exist here
         reserve = Reserve(_reserve);
         */
-        __Reserve_init(wUST , waUST);
+
+        __Reserve_init(
+            0x224e64ec1BDce3870a6a6c777eDd450454068FEC, //Ust Address
+            0x0000000000000000000000000000000000000000 //@TODO find real waust address here
+        );
 
         lpToken = ISushiSwapLPToken(sushiSwapLPToken);
 
         path = new address[](2);
         path[0] = wONE;
-        path[1] = wUST;
+        path[1] = address(wUST);
     }
 
     event Deposit(address indexed _from, uint256 _one, uint256 _aust);
@@ -62,6 +65,7 @@ contract OneAnchor is Reserve {
     /*
      * This function allows users to send ONE and receive aUST
      */
+    /*
     function deposit() public payable {
         uint256 value = msg.value;
         // Get UST Reserves in LP
@@ -116,11 +120,14 @@ contract OneAnchor is Reserve {
         // emit the event
         emit Deposit(msg.sender, msg.value, USTReserves);
     }
+    */
 
     /*
      * This function allows users to send aUST and receive ONE
      * through oneAnchor
      */
+
+    /*
     function withdrawal(uint256 amount) public payable {
         require(amount > 0, "Withdrawal amount must be greater than 0");
         // Get aUST Reserves in LP
@@ -149,6 +156,7 @@ contract OneAnchor is Reserve {
         // emit the event
         emit Withdrawal(msg.sender, msg.value, aUSTAmountInUST);
     }
+    */
 
     /*
      * This function sends aUST after user deposits ONE
@@ -160,10 +168,10 @@ contract OneAnchor is Reserve {
     ) internal returns (bool) {
         bool didTransfer = false;
         if (asset == 0) {
-            didTransfer = reserve.payaUST(to, amount);
+            didTransfer = payaUST(to, amount);
             return didTransfer;
         } else if (asset == 1) {
-            didTransfer = reserve.payONE(to, amount);
+            didTransfer = payONE(to, amount);
             return didTransfer;
         } else {
             return false;
@@ -202,6 +210,5 @@ contract OneAnchor is Reserve {
         }
 
     }
-
 
 }
