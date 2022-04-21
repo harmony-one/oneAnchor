@@ -4,6 +4,7 @@ pragma solidity 0.8.13;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/interfaces/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradable.sol";
 
 /*
     So what we essentially want is a service that will migrate UST to tera and
@@ -32,10 +33,9 @@ import "@openzeppelin/contracts-upgradeable/interfaces/IERC20Upgradeable.sol";
 */
 
 
-contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
+contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradable {
 
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
-    bytes32 public constant EARN_ROLE = keccak256("EARN_ROLE");
 
     IERC20Upgradeable wAUST;
     IERC20Upgradeable wUST;
@@ -45,9 +45,6 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
     //So there really is no point in even obscuring it either
     uint256 public USTBalance;
     uint256 public aUSTBalance;
-    uint256 public ONEBalance;
-
-    address private earnAccount;
 
     modifier onlyOperator() {
         require(
@@ -62,6 +59,7 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
         onlyInitializing
     {
         __Ownable_init();
+        __ReentrancyGuard_init();
         wAUST = IERC20Upgradeable(_wAUST);
         wUST = IERC20Upgradeable(_wUST);
     }
@@ -86,20 +84,19 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
         aUSTBalance -= amount;
     }
 
-    function addToONEReserve(uint256 amount) internal {
-        ONEBalance += amount;
-    }
-
-    function removeFromONEReserve(uint256 amount) internal {
-        ONEBalance -= amount;
-    }
-
     /*
      * Pay users.
      * Send assets to users when they deposit
      */
     function payaUST(address to, uint256 amount) internal returns (bool) {
         bool didTransfer = wAUST.transferFrom(address(this), to, amount);
+        require(didTransfer == true, "Payment failed");
+        removeFromaUSTReserve(amount);
+        return didTransfer;
+    }
+
+    function payUST(address to, uint256 amount) internal returns (bool) {
+        bool didTransfer = wUST.transferFrom(address(this), to, amount);
         require(didTransfer == true, "Payment failed");
         removeFromaUSTReserve(amount);
         return didTransfer;
@@ -178,40 +175,6 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
     }
 
     /*
-     * Pay users.
-     * Send assets to users when they withdraw
-     */
-    function withdrawaUST(uint256 amount)
-        external
-        onlyOperator
-        returns (bool)
-    {
-        bool didTransfer = wAUST.transferFrom(
-            address(this),
-            earnAccount,
-            amount
-        );
-        require(didTransfer == true, "Transfer failed");
-        removeFromaUSTReserve(amount);
-        return didTransfer;
-    }
-
-    function withdrawUST(uint256 amount)
-        external
-        onlyOperator
-        returns (bool)
-    {
-        bool didTransfer = wAUST.transferFrom(
-            address(this),
-            earnAccount,
-            amount
-        );
-        require(didTransfer == true, "Transfer failed");
-        removeFromaUSTReserve(amount);
-        return didTransfer;
-    }
-
-    /*
      * Send ONEs to address.
      */
     function sendViaCall(address payable _to, uint256 amount)
@@ -220,13 +183,6 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
     {
         (bool sent, ) = _to.call{value: amount}("");
         return sent;
-    }
-
-    /**
-     * set the account that will deposit into Anchor Earn
-     */
-    function setEarnAddress(address account) external onlyOwner {
-        earnAccount = account;
     }
 
     /**

@@ -10,6 +10,9 @@ import "./interfaces/IUniswapV2Router02.sol";
 import "./interfaces/ISushiSwapLPToken.sol";
 import "./Reserve.sol";
 
+//On solidity 8 and above safe math is build in so no need for .(operation) functions
+//Use unchecked if you want to not use safemath
+
 contract OneAnchor is Reserve {
     using SafeMathUpgradeable for uint256;
 
@@ -30,7 +33,7 @@ contract OneAnchor is Reserve {
     function __OneAnchor_init() external onlyInitializing {
         // addresses
         clONEUSD = 0xcEe686F89bc0dABAd95AEAAC980aE1d97A075FAD;
-        clUSTaUST = 0xcEe686F89bc0dABAd95AEAAC980aE1d97A075FAD;
+        clUSTaUST = 0xcEe686F89bc0dABAd95AEAAC980aE1d97A075FAD; //Same address as above?
         uniswapV2Router02 = 0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506;
         wONE = 0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a;
         sushiSwapLPToken = 0x4dABF6C57A8beA012F1EAa1259Ceed2a62AC7df2;
@@ -63,9 +66,10 @@ contract OneAnchor is Reserve {
     // TODO: add clearing and payments events
 
     /*
-     * This function allows users to send ONE and receive aUST
+    * This function allows users to send ONE and receive aUST
+    * Swap ONE for UST on DEX
+    * Swap UST for aUST using this pool
      */
-    /*
     function deposit() public payable {
         uint256 value = msg.value;
         // Get UST Reserves in LP
@@ -76,9 +80,7 @@ contract OneAnchor is Reserve {
         );
         // Get the amount of UST being deposited and check that
         // there are enough reserves to clear the transacion
-        uint256 OneAmountInUST = uint256(getExchangeRate(priceFeedOneUsd)).mul(
-            value
-        );
+        uint256 OneAmountInUST = getForwardValueFromOracle(value, priceFeedOneUsd);
         //This require wont tell the full story since slippage will move the pool when a swap happens
         //But it seems to be ok since there is a later require for this
         require(
@@ -103,6 +105,10 @@ contract OneAnchor is Reserve {
         // to the user and send them to it
         uint256 USTAmountInaUST = uint256(getExchangeRate(priceFeedUstaUst))
             .mul(finalUSTValue);
+
+
+
+
         bool didPay = pay(msg.sender, uint256(USTAmountInaUST), 0);
         require(didPay == true, "aUST were not transfer to the user");
         // move the USTs to the reserves contract
@@ -120,14 +126,14 @@ contract OneAnchor is Reserve {
         // emit the event
         emit Deposit(msg.sender, msg.value, USTReserves);
     }
-    */
+
 
     /*
      * This function allows users to send aUST and receive ONE
      * through oneAnchor
-     */
-
-    /*
+     * Swap aUST for UST using this contract
+     * Facilitate a swap UST to ONE using a dex, then give user ONE
+    */
     function withdrawal(uint256 amount) public payable {
         require(amount > 0, "Withdrawal amount must be greater than 0");
         // Get aUST Reserves in LP
@@ -156,7 +162,30 @@ contract OneAnchor is Reserve {
         // emit the event
         emit Withdrawal(msg.sender, msg.value, aUSTAmountInUST);
     }
-    */
+
+
+
+    function swap(uint256 amount, address inputToken)
+        public
+        nonReentrant
+    {
+        require(
+            inputToken == address(wUST) || inputToken == address(wAUST),
+            "ONEANCHOR: Invalid Input Token for Swap"
+        );
+
+        uint256 outputTokenAmount;
+
+        if(inputToken == address(wUST)){
+            outputTokenAmount = getBackwardValueFromOracle(amount, priceFeedUstaUst);
+            payaUST(msg.sender, outputTokenAmount);
+        }
+        else{
+            outputTokenAmount = getForwardValueFromOracle(amount, priceFeedUstaUst);
+            payUST(msg.sender, outputTokenAmount);
+        }
+    }
+
 
     /*
      * This function sends aUST after user deposits ONE
@@ -181,13 +210,23 @@ contract OneAnchor is Reserve {
     /**
      * Returns Pair exchange rate
      */
-    function getExchangeRate(AggregatorV3Interface cl)
-        internal
+
+    function getForwardValueFromOracle(uint256 _amountOther, AggregatorV3Interface cl)
+        public
         view
-        returns (int256)
     {
+        uint8 oracleDecimals = cl.decimals();
         (, int256 price, , , ) = cl.latestRoundData();
-        return price;
+        return _amountOther * uint256(price) / 10 ** uint256(oracleDecimals);
+    }
+
+    function getBackwardValueFromOracle(uint256 _amountUST, AggregatorV3Interface cl)
+        public
+        view
+    {
+        uint8 oracleDecimals = cl.decimals();
+        (, int256 price, , , ) = cl.latestRoundData();
+        return _amountUST / uint256(price) * 10 ** uint256(oracleDecimals);
     }
 
     function getRebalanceAmount()
@@ -196,9 +235,7 @@ contract OneAnchor is Reserve {
         returns (uint256[2] memory)
     {
 
-        uint8 oracleDecimals = priceFeedUstaUst.decimals();
-
-        uint256 aUSTAmountInUST =  aUSTBalance * uint256(getExchangeRate(priceFeedUstaUst)) / 10 ** uint256(oracleDecimals);
+        uint256 aUSTAmountInUST =  getForwardValueFromOracle(aUSTBalance, priceFeedUstaUst);
 
         if(aUSTAmountInUST > USTBalance){
             uint256 difference = aUSTAmountInUST - USTBalance;
