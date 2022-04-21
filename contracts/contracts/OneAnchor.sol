@@ -88,14 +88,18 @@ contract OneAnchor is Reserve {
             "There are not enough UST reserves in the Liquidity Pool"
         );
         // Swap ONE for wrapped UST in Sushi
-        // Why are we hard coding our min out to 1000? I guess its in wei so it wont really matter but still
-        // Since reserves is the to value tokens will get transfered directly to reserves contract
+        // Set min out to 95% of value
         uint256[] memory finalValues = router.swapExactETHForTokens{
             value: value
-        }(1000, path, address(this), block.timestamp + 120 seconds);
+        }(
+            finalUSTValue * 95 / 100,
+            path,
+            address(this),
+            block.timestamp + 120 seconds
+        );
         uint256 finalUSTValue = finalValues[1];
 
-        //Replace the check for above 0 with this, check for minimum of 75% of expected UST value swapped
+        //Double check slippage, probably redundant
         require(
             finalUSTValue * 95 / 100 >  OneAmountInUST,
             "Slippage on Swap Too Large"
