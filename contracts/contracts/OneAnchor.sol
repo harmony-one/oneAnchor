@@ -13,6 +13,12 @@ import "./Reserve.sol";
 //On solidity 8 and above safe math is build in so no need for .(operation) functions
 //Use unchecked if you want to not use safemath
 
+/*
+@TODO for next version
+Look at some statistics to see if we think pool will get drained over time because of no swap fees, or be ok due to aUST appreciation
+Look at making operators decentralized, and post a bond/have some incentive for balancing pool
+*/
+
 contract OneAnchor is Reserve {
     using SafeMathUpgradeable for uint256;
 
