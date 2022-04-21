@@ -128,25 +128,50 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
         return didTransfer;
     }
 
-    function withdrawAUSOperatorT(uint256 amount)
+    function withdrawAUSTOperator(uint256 amount)
         external
         onlyOperator
     {
+        bool didTransfer = wAUST.transferFrom(
+            address(this),
+            msg.sender,
+            amount
+        );
+        require(didTransfer == true, "Transfer failed");
 
+        removeFromUSTReserve(amount);
+        return didTransfer;
     }
 
+    //These deposit functions will require that the operators have approved this contract
     function depositUSTOperator(uint256 amount)
         external
         onlyOperator
     {
+        bool didTransfer = wUST.transferFrom(
+            msg.sender,
+            address(this),
+            amount
+        );
+        require(didTransfer == true, "Transfer failed");
 
+        addToUSTReserve(amount);
+        return didTransfer;
     }
 
     function depositAUSTOperator(uint256 amount)
         external
         onlyOperator
     {
+        bool didTransfer = wUST.transferFrom(
+            msg.sender,
+            address(this),
+            amount
+        );
+        require(didTransfer == true, "Transfer failed");
 
+        addToaUSTReserve(amount);
+        return didTransfer;
     }
 
     /*
