@@ -10,34 +10,23 @@ import "./interfaces/IUniswapV2Router02.sol";
 import "./interfaces/ISushiSwapLPToken.sol";
 import "./Reserve.sol";
 
-contract OneAnchor is OwnableUpgradeable, AccessControlUpgradeable {
+contract OneAnchor is Reserve {
     using SafeMathUpgradeable for uint256;
 
     address private uniswapV2Router02;
     address private wONE;
-    address private wUST;
-    address private waUST;
     address private clONEUSD;
     address private clUSTaUST;
-    address private reserves;
     address private sushiSwapLPToken;
-
-    uint256 public stakedAmount;
 
     AggregatorV3Interface internal priceFeedOneUsd;
     AggregatorV3Interface internal priceFeedUstaUst;
     IUniswapV2Router02 internal router;
-    IERC20Upgradeable internal wust;
-    IERC20Upgradeable internal waust;
-    Reserve internal reserve;
     ISushiSwapLPToken internal lpToken;
 
     address[] path;
-    uint256[] deposits;
-    uint256[] withdrawals;
 
-    bytes32 public constant CLEARING_ROLE = keccak256("CLEARING_ROLE");
-
+    //should an initializing function be external?
     function __OneAnchor_init(address _reserve) external onlyInitializing {
         __Ownable_init();
         // addresses
@@ -51,9 +40,14 @@ contract OneAnchor is OwnableUpgradeable, AccessControlUpgradeable {
         priceFeedOneUsd = AggregatorV3Interface(clONEUSD);
         priceFeedUstaUst = AggregatorV3Interface(clUSTaUST);
         router = IUniswapV2Router02(uniswapV2Router02);
+        /*
+        ** Remove these if we go with OneAnchor inheriting reserve
         wust = IERC20Upgradeable(wUST);
-        waust = IERC20Upgradeable(waUST);
+        waust = IERC20Upgradeable(waUST); //waUST does not seem to exist here
         reserve = Reserve(_reserve);
+        */
+        __Reserve_init(wUST , waUST);
+
         lpToken = ISushiSwapLPToken(sushiSwapLPToken);
 
         path = new address[](2);
@@ -109,7 +103,7 @@ contract OneAnchor is OwnableUpgradeable, AccessControlUpgradeable {
         bool didPay = pay(msg.sender, uint256(USTAmountInaUST), 0);
         require(didPay == true, "aUST were not transfer to the user");
         // move the USTs to the reserves contract
-        bool didTransfer = wust.transferFrom(
+        bool didTransfer = wUST.transferFrom(
             address(this),
             reserves,
             finalUSTValue
@@ -151,26 +145,10 @@ contract OneAnchor is OwnableUpgradeable, AccessControlUpgradeable {
             didTransfer == true,
             "Deposited amount could not be transfered to reserves"
         );
-        // add the deposited amount to th stake queue
+        // add the deposited amount to the stake queue
         unstake(msg.sender, int256(amount));
         // emit the event
         emit Withdrawal(msg.sender, msg.value, aUSTAmountInUST);
-    }
-
-    /*
-     * This function adds this deposit to the queue
-     */
-    function stake(address account, int256 amount) internal {
-        deposits.push(uint256(amount));
-        reserve.updateBalance(account, amount);
-    }
-
-    /*
-     * This function adds this deposit to the queue
-     */
-    function unstake(address account, int256 amount) internal {
-        withdrawals.push(uint256(amount));
-        reserve.updateBalance(account, -1 * amount);
     }
 
     /*
@@ -203,68 +181,5 @@ contract OneAnchor is OwnableUpgradeable, AccessControlUpgradeable {
     {
         (, int256 price, , , ) = cl.latestRoundData();
         return price;
-    }
-
-    /**
-     * get the value of the next transaction in the queue
-     */
-    function getNextTransaction(uint256 action)
-        external
-        view
-        returns (uint256)
-    {
-        require(
-            hasRole(CLEARING_ROLE, msg.sender),
-            "Caller cannot access this information"
-        );
-        if (action == 0) {
-            return deposits[0];
-        } else if (action == 1) {
-            return withdrawals[0];
-        } else {
-            return 0;
-        }
-    }
-
-    /**
-     * clear the next transaction in the queue
-     */
-    function clearNextTransaction(uint256 action) external {
-        require(
-            hasRole(CLEARING_ROLE, msg.sender),
-            "Caller cannot clear transactions"
-        );
-        if (action == 0) {
-            reserve.withdrawUST(deposits[0]);
-        } else if (action == 1) {
-            reserve.withdrawaUST(deposits[0]);
-        }
-        dequeue(action);
-    }
-
-    /**
-     * remove a transaction fro the queue
-     */
-    function dequeue(uint256 action) internal {
-        if (action == 0) {
-            delete deposits[0];
-        }
-        if (action == 1) {
-            delete withdrawals[0];
-        }
-    }
-
-    /**
-     * Return `true` if the `account` belongs to the community.
-     */
-    function isMember(address account) public view virtual returns (bool) {
-        return hasRole(CLEARING_ROLE, account);
-    }
-
-    /**
-     * set the clearing role (intended for reserves contract)
-     */
-    function setClearingRole(address admin) external onlyOwner {
-        _setupRole(CLEARING_ROLE, admin);
     }
 }

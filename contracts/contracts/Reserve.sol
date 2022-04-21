@@ -47,8 +47,6 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
     uint256 public aUSTBalance;
     uint256 public ONEBalance;
 
-    mapping(address => int256) private balances;
-
     address private earnAccount;
 
     modifier onlyOperator() {
@@ -59,7 +57,9 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
         _;
     }
 
-    constructor(address _wAUST, address _wUST)
+    function __Reserve_init(address _wAUST, address _wUST)
+        internal
+        onlyInitializing
     {
         __Ownable_init();
         wAUST = IERC20Upgradeable(_wAUST);
@@ -209,13 +209,6 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
     }
 
     /*
-     * Update Accountholders balances
-     */
-    function updateBalance(address account, int256 amount) public {
-        balances[account] += amount;
-    }
-
-    /*
      * Send ONEs to address.
      */
     function sendViaCall(address payable _to, uint256 amount)
@@ -236,7 +229,7 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable {
     /**
      * Return `true` if the `account` belongs to the community.
      */
-    function isMember(address account) public view virtual returns (bool) {
+    function isOperator(address account) public view virtual returns (bool) {
         return hasRole(OPERATOR_ROLE, account);
     }
 
