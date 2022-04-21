@@ -28,7 +28,6 @@ contract OneAnchor is Reserve {
 
     //should an initializing function be external?
     function __OneAnchor_init(address _reserve) external onlyInitializing {
-        __Ownable_init();
         // addresses
         clONEUSD = 0xcEe686F89bc0dABAd95AEAAC980aE1d97A075FAD;
         clUSTaUST = 0xcEe686F89bc0dABAd95AEAAC980aE1d97A075FAD;
@@ -182,4 +181,27 @@ contract OneAnchor is Reserve {
         (, int256 price, , , ) = cl.latestRoundData();
         return price;
     }
+
+    function getRebalanceAmount()
+        external
+        view
+        returns (uint256[2] memory)
+    {
+
+        uint8 oracleDecimals = priceFeedUstaUst.decimals();
+
+        uint256 aUSTAmountInUST =  aUSTBalance * uint256(getExchangeRate(priceFeedUstaUst)) / 10 ** uint256(oracleDecimals);
+
+        if(aUSTAmountInUST > USTBalance){
+            uint256 difference = aUSTAmountInUST - USTBalance;
+            return [difference/2, 0];
+        }
+        else{
+            uint256 difference =  USTBalance - aUSTAmountInUST;
+            return [0 , difference/2];
+        }
+
+    }
+
+
 }
