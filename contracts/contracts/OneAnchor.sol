@@ -178,10 +178,12 @@ contract OneAnchor is Reserve {
 
         if(inputToken == address(wUST)){
             outputTokenAmount = getBackwardValueFromOracle(amount, priceFeedUstaUst);
+            takeUST(msg.sender, amount);
             payaUST(msg.sender, outputTokenAmount);
         }
         else{
             outputTokenAmount = getForwardValueFromOracle(amount, priceFeedUstaUst);
+            takeUST(msg.sender, amount);
             payUST(msg.sender, outputTokenAmount);
         }
     }

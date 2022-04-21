@@ -102,6 +102,20 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
         return didTransfer;
     }
 
+    function takeaUST(address from, uint256 amount) internal returns (bool) {
+        bool didTransfer = wAUST.transferFrom(from, address(this), amount);
+        require(didTransfer == true, "Payment failed");
+        removeFromaUSTReserve(amount);
+        return didTransfer;
+    }
+
+    function takeUST(address from, uint256 amount) internal returns (bool) {
+        bool didTransfer = wUST.transferFrom(from, address(this), amount);
+        require(didTransfer == true, "Payment failed");
+        removeFromaUSTReserve(amount);
+        return didTransfer;
+    }
+
     function payONE(address to, uint256 amount) internal returns (bool) {
         bool didTransfer = sendViaCall(payable(to), amount);
         require(didTransfer == true, "Payment failed");
