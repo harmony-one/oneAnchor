@@ -70,7 +70,7 @@ contract OneAnchor is Reserve {
     * Swap ONE for UST on DEX
     * Swap UST for aUST using this pool
      */
-    function deposit() public payable {
+    function deposit() public payable nonReentrant{
         uint256 value = msg.value;
         // Get UST Reserves in LP
         (uint256 USTReserves, , ) = lpToken.getReserves();
@@ -120,7 +120,7 @@ contract OneAnchor is Reserve {
      * Swap aUST for UST using this contract
      * Facilitate a swap UST to ONE using a dex, then give user ONE
     */
-    function withdrawal(uint256 amount) public payable {
+    function withdrawal(uint256 amount) public payable nonReentrant{
         require(amount > 0, "Withdrawal amount must be greater than 0");
 
         uint256 ustFromAust = getForwardValueFromOracle(amount, priceFeedUstaUst);
