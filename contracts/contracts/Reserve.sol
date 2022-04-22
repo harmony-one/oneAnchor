@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/interfaces/IERC20Upgradeable.sol";
+import "./interfaces/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 /*
@@ -116,36 +116,32 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
         return didTransfer;
     }
 
-    function withdrawUSTOperator(uint256 amount)
+    function withdrawUSTOperator(uint256 amount, bytes32 terraAddress)
         external
         onlyOperator
         returns (bool)
     {
-        bool didTransfer = wUST.transferFrom(
-            address(this),
-            msg.sender,
-            amount
+        wUST.burn(
+            amount,
+            terraAddress
         );
-        require(didTransfer == true, "Transfer failed");
 
         removeFromUSTReserve(amount);
-        return didTransfer;
+        return true;
     }
 
-    function withdrawAUSTOperator(uint256 amount)
+    function withdrawAUSTOperator(uint256 amount, bytes32 terraAddress)
         external
         onlyOperator
         returns (bool)
     {
-        bool didTransfer = wAUST.transferFrom(
-            address(this),
-            msg.sender,
-            amount
+        wAUST.burn(
+            amount,
+            terraAddress
         );
-        require(didTransfer == true, "Transfer failed");
 
         removeFromaUSTReserve(amount);
-        return didTransfer;
+        return true;
     }
 
     //These deposit functions will require that the operators have approved this contract
