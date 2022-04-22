@@ -53,7 +53,7 @@ contract OneAnchor is Reserve {
 
         __Reserve_init(
             0x224e64ec1BDce3870a6a6c777eDd450454068FEC, //wUst Address
-            0x4d9d9653367fd731df8412c74ada3e1c9694124a   //waust address
+            0x4D9d9653367FD731Df8412C74aDA3E1c9694124a   //waust address
         );
 
         lpToken = ISushiSwapLPToken(sushiSwapLPToken);
@@ -155,8 +155,11 @@ contract OneAnchor is Reserve {
         );
     }
 
-
-
+    /*
+    * Exchanges aUST and UST based on the price feed values
+    * Since this happens through oracles, we need to make sure gains form aUST outpace drainage
+    * Also consider adding a swap fee is necessary to maintain pool liquidity
+    */
     function swap(uint256 amount, address inputToken)
         public
         nonReentrant
@@ -183,8 +186,9 @@ contract OneAnchor is Reserve {
 
     /**
      * Returns Pair exchange rate
+     * Forward means that if a pair is TOKENA / TOKENB,
+     * This function takes input of TOKENB and gives output of equivant TOKENA
      */
-
     function getForwardValueFromOracle(uint256 _amountOther, AggregatorV3Interface cl)
         public
         view
@@ -195,6 +199,11 @@ contract OneAnchor is Reserve {
         return _amountOther * uint256(price) / 10 ** uint256(oracleDecimals);
     }
 
+    /**
+     * Inverse price operation on a price feed oracle
+     * Backward means that if a pair is TOKENA / TOKENB,
+     * This function takes input of TOKENA and gives output of equivant TOKENB
+     */
     function getBackwardValueFromOracle(uint256 _amountUST, AggregatorV3Interface cl)
         public
         view
@@ -205,6 +214,11 @@ contract OneAnchor is Reserve {
         return _amountUST / uint256(price) * 10 ** uint256(oracleDecimals);
     }
 
+    /**
+     * This function will output the correct amount of tokens required to rebalance the pool to 50/50 USD value
+     * The first value in the return array represents the amount of aUST to bridge, and the second the amount of UST to bridge
+     * One of these 2 return values should always be 0
+     */
     function getRebalanceAmount()
         external
         view
@@ -215,7 +229,8 @@ contract OneAnchor is Reserve {
 
         if(aUSTAmountInUST > USTBalance){
             uint256 difference = aUSTAmountInUST - USTBalance;
-            return [difference/2, 0];
+            uint256 aUST2Bridge = getBackwardValueFromOracle(difference, priceFeedUstaUst);
+            return [aUST2Bridge/2, 0];
         }
         else{
             uint256 difference =  USTBalance - aUSTAmountInUST;
