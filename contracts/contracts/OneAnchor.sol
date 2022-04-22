@@ -35,8 +35,11 @@ contract OneAnchor is Reserve {
 
     address[] path;
 
-    //should an initializing function be external?
-    function __OneAnchor_init() external onlyInitializing {
+    function initialize() external initializer {
+        __OneAnchor_init();
+    }
+
+    function __OneAnchor_init() internal onlyInitializing {
         // addresses
         clONEUSD = 0xcEe686F89bc0dABAd95AEAAC980aE1d97A075FAD;
         clUSTaUST = 0xcEe686F89bc0dABAd95AEAAC980aE1d97A075FAD; //Same address as above?
@@ -47,16 +50,10 @@ contract OneAnchor is Reserve {
         priceFeedOneUsd = AggregatorV3Interface(clONEUSD);
         priceFeedUstaUst = AggregatorV3Interface(clUSTaUST);
         router = IUniswapV2Router02(uniswapV2Router02);
-        /*
-        ** Remove these if we go with OneAnchor inheriting reserve
-        wust = IERC20Upgradeable(wUST);
-        waust = IERC20Upgradeable(waUST); //waUST does not seem to exist here
-        reserve = Reserve(_reserve);
-        */
 
         __Reserve_init(
-            0x224e64ec1BDce3870a6a6c777eDd450454068FEC, //Ust Address
-            0x0000000000000000000000000000000000000000 //@TODO find real waust address here
+            0x224e64ec1BDce3870a6a6c777eDd450454068FEC, //wUst Address
+            0x4d9d9653367fd731df8412c74ada3e1c9694124a   //waust address
         );
 
         lpToken = ISushiSwapLPToken(sushiSwapLPToken);
