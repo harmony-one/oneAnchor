@@ -13,12 +13,6 @@ import Foundation
 /// These methods are intended to be uses by other methods
 /// of the oneAnchor library
 
-/// config - sets the oneAnchor.sol contract address in mainnet
-///
-/// - Parameter contractAddress: String with a valid Harmony address
-func config(contractAddress: String) {
-    K.config.defaults.set(contractAddress, forKey: K.config.key)
-}
 /// buildTxData - builds a string with the value of txData
 ///
 /// - Parameter selector: String with the keccak encoding of the contract's function
@@ -52,6 +46,13 @@ func getTransaction(selector: String, args: [String], value: String) -> String {
 ///
 /// These are the methods that intended to be called by anyone
 /// implementing the oneAnchor libraries
+
+/// config - sets the oneAnchor.sol contract address in mainnet
+///
+/// - Parameter contractAddress: String with a valid Harmony address
+func config(contractAddress: String) {
+    K.config.defaults.set(contractAddress, forKey: K.config.key)
+}
 
 /// deposit - builds a deposit transaction
 ///
