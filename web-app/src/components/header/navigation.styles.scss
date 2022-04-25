@@ -1,0 +1,45 @@
+@import "../../assets/scss/styles.scss";
+
+/* Themes images and color properties */
+.light {
+  .navigation {
+    &__item {
+      color: $black;
+    }
+  }  
+}
+
+.dark {
+  .navigation {
+    &__item {
+      color: $white;
+    }
+  }
+}
+
+/* Layout properties */
+.navigation {
+  @include flex-column();
+  width: 70%;
+  justify-content: flex-end;
+  margin-bottom: 0.5em;
+
+  &__list {
+    @include flex-wrap();
+    justify-content: center;
+    list-style: none;
+  }
+
+  &__item {
+    margin-right: 2em;
+    text-decoration: none;
+    padding: 0 1em 0.5em 1em;
+  }
+
+  .active {
+    border-style: solid;
+    border-color: $blue;
+    border-width: 0 0 3px 0;
+    font-weight: 600;
+  }
+}
