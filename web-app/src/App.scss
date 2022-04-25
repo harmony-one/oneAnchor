@@ -1,0 +1,56 @@
+@import "./assets/scss/styles.scss";
+
+#app {
+  min-height: 100vh;
+}
+
+@keyframes fadeInOpacity {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInOpacityB {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Themes images and color properties */
+.light {
+  background-color: $white;
+  @include image-background($image: "bg-emblem.svg");
+  background-position: right bottom;
+  color: $black;
+  animation-name: fadeInOpacityB;
+  animation-iteration-count: 1;
+  animation-timing-function: ease-out;
+  animation-duration: 0.25s;
+}
+
+.dark {
+  background-color: $black;
+  @include image-background($image: "bg-emblem-dark.svg");
+  background-position: right bottom;
+  color: $white;
+  animation-name: fadeInOpacity;
+  animation-iteration-count: 1;
+  animation-timing-function: ease-in;
+  animation-duration: 0.2s;
+}
+
+.container {
+  @include flex-wrap();
+  margin: 0 auto;
+  width: 80em;
+}
+
+.main {
+  width: 100%;
+}
