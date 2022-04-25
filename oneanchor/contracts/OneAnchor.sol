@@ -120,7 +120,7 @@ contract OneAnchor is Reserve {
      * Swap aUST for UST using this contract
      * Facilitate a swap UST to ONE using a dex, then give user ONE
     */
-    function withdrawal(uint256 amount) public payable nonReentrant{
+    function withdrawal(uint256 amount) public nonReentrant{
         require(amount > 0, "Withdrawal amount must be greater than 0");
 
         uint256 ustFromAust = getForwardValueFromOracle(amount, priceFeedUstaUst);
@@ -234,6 +234,17 @@ contract OneAnchor is Reserve {
             return [0 , difference/2];
         }
 
+    }
+
+     /**
+     * This function will output the total 
+     * dpeosited amount an account has in UST
+     */
+    function getBalance() public view returns(uint) {
+        uint balance = wAUST.balanceOf(msg.sender);
+        // Calculate the amount of UST that the user has deposited
+        uint256 aUSTAmountInUST =  getForwardValueFromOracle(balance, priceFeedUstaUst);
+        return aUSTAmountInUST;
     }
 
 }
