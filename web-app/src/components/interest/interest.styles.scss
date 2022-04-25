@@ -1,0 +1,51 @@
+@import "../../assets/scss/styles.scss";
+
+/* Themes images and color properties */
+.light {
+  .interest {
+    &__title {
+      color: $dark-gray;
+    }
+
+    &__ratio {
+      color: $blue;
+    }
+
+    &__date {
+      color: $black;
+    }
+  }  
+}
+
+.dark {
+  .interest {
+    &__title {
+      color: $light-gray;
+    }
+
+    &__ratio {
+      color: $white;
+    }
+
+    &__date {
+      color: $white;
+    }
+  }
+}
+
+/* Layout properties */
+.interest {
+  text-align: center;
+  padding: 3em 0 2em 0;
+  &__title,
+  &__date {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  &__ratio {
+    font-family: "Inter", "Tahoma", sans-serif;
+    font-size: 4rem;
+    font-weight: 600;
+  }
+}

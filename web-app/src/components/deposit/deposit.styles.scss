@@ -1,0 +1,104 @@
+@import "../../assets/scss/styles.scss";
+
+/* Themes images and color properties */
+.light {
+  .deposit {
+    background-color: white;
+
+    &__available {
+      color: $black;
+    }
+  }
+}
+
+.dark {
+  .deposit {
+    background-color: rgba($color: $white, $alpha: 0.05);
+
+    &__available {
+      color: $white;
+    }
+  }
+}
+
+/* Layout properties */
+.deposit {
+  width: 35%;
+  margin: 0 auto;
+  text-align: center;
+  padding: 3em;
+  border-radius: 25px;
+
+  &__title {
+    font-weight: 600;
+    color: $light-gray;
+  }
+
+  &__available,
+  &__input {
+    font-family: "Inter", "Tahoma", sans-serif;
+    font-weight: 600;
+  }
+
+  &__available {
+    font-size: 1rem;
+    line-height: 2rem;
+  }
+
+  &__input {
+    width: 100%;
+    font-size: 3rem;
+    text-align: center;
+    color: $light-gray;
+    background-color: transparent;
+    border: 0;
+
+    &:focus {
+      outline: none;
+    }
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    &[type="number"] {
+      -moz-appearance: textfield;
+    }
+  }
+
+  &__warning {
+    font-size: 0.875rem;
+    line-height: 1rem;
+    color: $warning;
+  }
+
+  &__cta {
+    @include flex-wrap();
+    justify-content: space-between;
+    margin-top: 1em;
+  }
+
+  &__button {
+    width: 49.5%;
+    font-size: 0.875rem;
+  }
+
+  .button {
+    text-align: center;
+    color: $white;
+    font-weight: 700;
+    background-color: $blue;
+    border-style: none;
+    border-radius: 20px;
+    padding: 1.5em 3em 1.5em;
+
+    &:hover {
+      background-color: $blue-hover;
+    }
+    &:disabled {
+      background-color: $blue-hover;
+    }
+  }
+}
