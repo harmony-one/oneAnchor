@@ -1,3 +1,4 @@
 [build]
-publish = "build/"
+base = "web-app"
+publish = "public/"
 command = "CI= yarn build"
