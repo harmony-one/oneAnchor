@@ -11,11 +11,11 @@ Harmony Income allows users to deposit and withdraw One stablecoins using Anchor
 ### Commands 
 * Fetch repo
 ```
-git clone git@github.com:bpolania/oneAnchor_v2.git
+git clone git@github.com:harmony-one/oneAnchor.git
 ```
 * Root folder
 ```
-oneAnchor_v2/web-app/
+oneAnchor/web-app/
 ```
 * Install dependencies
 ```
