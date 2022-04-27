@@ -7,7 +7,7 @@ import Navigation from "./navigation.component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faMoon } from "@fortawesome/free-solid-svg-icons";
 import "./header.styles.scss";
-import { parseFromWei, truncateAddressString } from "web3/web3.utils";
+import { parseFromWei } from "web3/web3.utils";
 
 interface IHeaderProps {
   state: boolean;

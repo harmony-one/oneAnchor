@@ -2,7 +2,6 @@ import Web3 from "web3";
 
 import tokensABI from './contracts/tokens-abi';
 import incomeABI from './contracts/income-abi';
-import { faCommentsDollar } from "@fortawesome/free-solid-svg-icons";
 
 window.ethereum.enable();
 

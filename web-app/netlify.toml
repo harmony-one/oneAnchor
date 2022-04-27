@@ -2,3 +2,9 @@
 base = "web-app"
 publish = "public/"
 command = "CI= yarn build"
+
+
+#[build]
+#  command = "react-scripts build"
+#  functions = "netlify/functions"
+# publish = "build"

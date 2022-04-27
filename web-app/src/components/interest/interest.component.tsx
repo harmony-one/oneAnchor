@@ -6,9 +6,9 @@ import "./interest.styles.scss";
 const Interest: React.FC = () => {
   const [apy, setApy ] = useState("");
   const date = new Date();
-  const cachedApy = sessionStorage.getItem("apy"); 
 
   useEffect(()=>{
+    const cachedApy = sessionStorage.getItem("apy"); 
     if (!cachedApy) {
       getApy().then((result) => {
         setApy(result || "");
