@@ -1,11 +1,13 @@
 import dotenv from 'dotenv';
 import { MnemonicKey, AnchorEarn, CHAINS, NETWORKS, DENOMS, TxOutput, TxDetails, MarketOutput, MarketEntry, aUST } from '@anchor-protocol/anchor-earn'
 import { BigNumber } from 'bignumber.js';
-import { LCDClient, TxLog  } from '@terra-money/terra.js'
+import { TxLog  } from '@terra-money/terra.js'
 import { buildDepositResponse, buildWithdrawResponse } from '../responses'
+import { getLCDClient } from '../terra'
 import { BridgeResponse, DepositResponse, WithdrawResponse } from '../types'
 
 dotenv.config()
+
 
 async function getMintedaUST(logs: Object) {
     var mintAmount
@@ -64,10 +66,7 @@ export async function deposit(amount: string) {
         })
         if (txDetails) {
             const txDetail = txOutput.txDetails[0] as TxDetails
-            const terra = new LCDClient({
-              URL: 'https://lcd.terra.dev',
-              chainID: 'columbus-5',
-            });
+            const terra = getLCDClient()
             await terra.tx.txInfo(txDetail.txHash)
                 .then(res => {
                     logs = res.logs as TxLog[]
@@ -117,10 +116,7 @@ export async function withdraw(amount: string) {
         })
         if (txDetails) {
             const txDetail = txOutput.txDetails[0] as TxDetails
-            const terra = new LCDClient({
-              URL: 'https://lcd.terra.dev',
-              chainID: 'columbus-5',
-            });
+            const terra = getLCDClient()
             await terra.tx.txInfo(txDetail.txHash)
                 .then(res => {
                     logs = res.logs as TxLog[]
@@ -168,5 +164,6 @@ export async function apy() {
     } catch(error) {
         console.log(error)
     }
-
 }
+
+

@@ -35,7 +35,7 @@ export async function getUST(amount: number) {
         // bridge UST from Terra to Harmony contract
         bridgeUSTToHarmony(amount.toString(), process.env.HMY_ONE_ANCHOR_CONTRACT_ADDRESS);
         updateUST(amount * -1); //on success
-    } else if (amount * 0.75 > USTbalance * exchangeRate) { // there is enough aUST in Anchor
+    } else if (amount * 0.75 > USTbalance / exchangeRate) { // there is enough aUST in Anchor
         log("Withdrawing from anchor", [["amount",amount.toString(),"number"]]);
         // withdraw in Anchor
         withdraw(amount.toString());

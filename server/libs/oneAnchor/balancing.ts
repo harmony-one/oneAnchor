@@ -1,9 +1,8 @@
 import { decodeTerraAddressOnEtherBase} from '../terra'
-import {ethers} from 'ethers'
+import { ethers } from 'ethers'
+import { log } from '../logs'
+import abi from './abi/oneAnchor.json';
 import 'dotenv/config'
-
-const { abi } = require('./abi/oneAnchor.json');
-import {log} from '../logs'
 
 const provider = new ethers.providers.JsonRpcProvider(process.env.HMY_RPC_PROVIDER)
 const signer = new ethers.Wallet(process.env.HMY_PK, provider);
