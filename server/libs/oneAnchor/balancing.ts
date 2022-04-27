@@ -1,5 +1,4 @@
-import { BridgeResponse, DepositResponse, WithdrawResponse } from '../types'
-import { bridgeaUSTToHarmony, bridgeUSTToHarmony } from '../terra'
+import { decodeTerraAddressOnEtherBase} from '../terra'
 import {ethers} from 'ethers'
 import 'dotenv/config'
 
@@ -16,35 +15,8 @@ export async function getBalanceReserves() {
     return contract.getRebalanceAmount();
 }
 
-export async function depositToReserves(amount: number) {
-    log("calling depositToReserves", [["amount",amount.toString(),"number"]]);
+export async function withdrawAUSTFromReserves(amount: number) {
+    log("calling withdrawAUSTToReserves", [["amount",amount.toString(),"number"]]);
+    var terraAddress = decodeTerraAddressOnEtherBase(process.env.TERRA_MAIN_ACCOUNT_ADDRESS);
+    return contract.withdrawAUSTOperator(amount, terraAddress);
 }
-
-export async function withdrawToReserves(amount: number) {
-    log("calling withdrawToReserves", [["amount",amount.toString(),"number"]]);
-
-}
-
-
-// export async function deposit(value) {
-//     await deposit(value).then(result => {
-//         const amount = Number((result as unknown as DepositResponse).aUST)
-//         bridgeaUSTToHarmony(amount.toString(), originAddress).then(r => {
-//             const hash = (r as BridgeResponse).hash
-//             res.send(buildEndpointResponse('success',hash,amount.toString(),''))
-//         })
-//     })
-
-// }
-
-// async function withdraw(value) {
-//     await withdraw(value).then(result => {
-//         var amount = Number((result as unknown as WithdrawResponse).UST)
-//         bridgeUSTToHarmony(amount.toString(), originAddress).then(r => {
-//             const response = r as BridgeResponse
-//             const hash = response.hash
-//             amount = amount - Number(response.fee)
-//         })
-//     })
-    
-// }
