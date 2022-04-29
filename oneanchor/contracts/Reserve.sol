@@ -46,6 +46,13 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
     uint256 public USTBalance;
     uint256 public aUSTBalance;
 
+    event Payment(address indexed _to, string asset, uint256 _amount);
+    event TransferToReserve(address indexed _from, string asset, uint256 _amount);
+    event OperatorWithdraw(address indexed _to, string asset, uint256 _amount);
+    event OperatorDeposit(address indexed _to, string asset, uint256 _amount);
+    event SentOne(address indexed _to, uint256 _amount);
+    event OperatorRoleSet(address indexed _to);
+
     modifier onlyOperator() {
         require(
             hasRole(OPERATOR_ROLE, msg.sender),
@@ -53,7 +60,6 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
         );
         _;
     }
-
     function __Reserve_init(address _wAUST, address _wUST)
         internal
         onlyInitializing
@@ -63,7 +69,6 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
         wAUST = IERC20Upgradeable(_wAUST);
         wUST = IERC20Upgradeable(_wUST);
     }
-
     /*
      * Modify Reserve amounts.
      * Add or remove from the different assets balances
@@ -71,7 +76,6 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
     function addToUSTReserve(uint256 amount) internal {
         USTBalance += amount;
     }
-
     function removeFromUSTReserve(uint256 amount) internal {
         USTBalance -= amount;
     }
@@ -83,7 +87,6 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
     function removeFromaUSTReserve(uint256 amount) internal {
         aUSTBalance -= amount;
     }
-
     /*
      * Pay users.
      * Send assets to users when they deposit
@@ -92,27 +95,28 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
         bool didTransfer = wAUST.transferFrom(address(this), to, amount);
         require(didTransfer == true, "Payment failed");
         removeFromaUSTReserve(amount);
+        emit Payment(to, "aust", amount);
         return didTransfer;
     }
-
     function payUST(address to, uint256 amount) internal returns (bool) {
         bool didTransfer = wUST.transferFrom(address(this), to, amount);
         require(didTransfer == true, "Payment failed");
         removeFromaUSTReserve(amount);
+        emit Payment(to, "ust", amount);
         return didTransfer;
     }
-
     function takeAUST(address from, uint256 amount) internal returns (bool) {
         bool didTransfer = wAUST.transferFrom(from, address(this), amount);
         require(didTransfer == true, "Payment failed");
         addToaUSTReserve(amount);
+        emit TransferToReserve(from, "aust", amount);
         return didTransfer;
     }
-
     function takeUST(address from, uint256 amount) internal returns (bool) {
         bool didTransfer = wUST.transferFrom(from, address(this), amount);
         require(didTransfer == true, "Payment failed");
         addToUSTReserve(amount);
+        emit TransferToReserve(from, "ust", amount);
         return didTransfer;
     }
 
@@ -125,11 +129,10 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
             amount,
             terraAddress
         );
-
         removeFromUSTReserve(amount);
+        OperatorWithdraw(terraAddress, "ust", amount);
         return true;
     }
-
     function withdrawAUSTOperator(uint256 amount, bytes32 terraAddress)
         external
         onlyOperator
@@ -139,11 +142,10 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
             amount,
             terraAddress
         );
-
         removeFromaUSTReserve(amount);
+        OperatorWithdraw(terraAddress, "aust", amount);
         return true;
     }
-
     //These deposit functions will require that the operators have approved this contract
     function depositUSTOperator(uint256 amount)
         external
@@ -156,11 +158,10 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
             amount
         );
         require(didTransfer == true, "Transfer failed");
-
         addToUSTReserve(amount);
+        OperatorDeposit(msg.sender, "ust", amount);
         return didTransfer;
     }
-
     function depositAUSTOperator(uint256 amount)
         external
         onlyOperator
@@ -172,11 +173,10 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
             amount
         );
         require(didTransfer == true, "Transfer failed");
-
         addToaUSTReserve(amount);
+        OperatorDeposit(msg.sender, "aust", amount);
         return didTransfer;
     }
-
     /*
      * Send ONEs to address.
      */
@@ -185,20 +185,20 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
         returns (bool)
     {
         (bool sent, ) = _to.call{value: amount}("");
+        SentOne(_to, _amount);
         return sent;
     }
-
     /**
      * Return `true` if the `account` belongs to the community.
      */
     function isOperator(address account) public view returns (bool) {
         return hasRole(OPERATOR_ROLE, account);
     }
-
     /**
      * set the owner role (intended for oneAnchor contract)
      */
     function setOperatorRole(address owner) external onlyOwner {
         _setupRole(OPERATOR_ROLE, owner);
+        OperatorRoleSet(owner);
     }
 }

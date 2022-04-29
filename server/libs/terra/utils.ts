@@ -48,11 +48,11 @@ export async function getAUSTbalance(): Promise<number> {
 
 /* bech32 */
 export function decodeTerraAddressOnEtherBase(address: string) {
-    try {
-      const { words } = bech32.bech32.decode(address)
-      const data = bech32.bech32.fromWords(words)
-      return '0x' + Buffer.from(data).toString('hex')
-    } catch (error) {
-      return ''
-    }
+  try {
+    const { words } = bech32.bech32.decode(address)
+    const data = bech32.bech32.fromWords(words)
+    return '0x' + Buffer.from(data).toString('hex')
+  } catch (error) {
+    return ''
   }
+}

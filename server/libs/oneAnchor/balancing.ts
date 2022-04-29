@@ -5,7 +5,6 @@ import abi from './abi/oneAnchor.json';
 import 'dotenv/config'
 
 const provider = new ethers.providers.JsonRpcProvider(process.env.HMY_RPC_PROVIDER)
-const signer = new ethers.Wallet(process.env.HMY_PK, provider);
 let contractAddress = process.env.HMY_ONE_ANCHOR_CONTRACT_ADDRESS;
 let contract = new ethers.Contract(contractAddress, abi, provider);
 

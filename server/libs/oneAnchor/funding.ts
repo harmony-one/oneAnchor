@@ -11,7 +11,7 @@ export async function getAUST(amount: number) {
     let aUSTbalance = await getAUSTbalance();
     let exchangeRate = await getExchangeRate();
     if (amount * 0.75 > aUSTbalance) { // there are enough aUST in Anchor 
-        log("bridging aUST to smart contract", [["amount",amount.toString(),"number"]]);
+        
         // bridge from terra aUST to wrapped aUST
         // in the reserves contract wallet
         bridgeaUSTToHarmony(amount.toString(), process.env.HMY_ONE_ANCHOR_CONTRACT_ADDRESS);
