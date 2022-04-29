@@ -16,4 +16,4 @@
 
 ### web app
 
-* oneAnchor React6 webapp
+* oneAnchor React6 webapp moved to https://github.com/harmony-one/oneAnchor-webapp
