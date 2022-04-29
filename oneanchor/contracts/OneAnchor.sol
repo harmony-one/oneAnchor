@@ -39,7 +39,7 @@ contract OneAnchor is Reserve {
     function __OneAnchor_init() internal onlyInitializing {
         // addresses
         clONEUSD = 0xcEe686F89bc0dABAd95AEAAC980aE1d97A075FAD;
-        clUSTaUST = 0xcEe686F89bc0dABAd95AEAAC980aE1d97A075FAD; //Same address as above?
+        clUSTaUST = 0xDa543b5eC7353C289A633aF289c0e5a7321f8b0f;
         uniswapV2Router02 = 0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506;
         wONE = 0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a;
         sushiSwapLPToken = 0x4dABF6C57A8beA012F1EAa1259Ceed2a62AC7df2;
@@ -61,9 +61,7 @@ contract OneAnchor is Reserve {
     }
 
     event Deposit(address indexed _from, uint256 _one, uint256 _aust);
-    event Withdrawal(address indexed _from, uint256 _one, uint256 _ust);
-
-    // TODO: add clearing and payments events
+    event Withdrawal(address indexed _from, uint256 _aust, uint256 _one);
 
     /*
     * This function allows users to send ONE and receive aUST
@@ -110,10 +108,8 @@ contract OneAnchor is Reserve {
         uint256 USTAmountInaUST = getBackwardValueFromOracle(finalUSTValue, priceFeedUstaUst);
 
         payAUST(msg.sender, USTAmountInaUST);
-
+        emit Deposit(msg.sender, msg.value, finalUSTValue);
     }
-
-
     /*
      * This function allows users to send aUST and receive ONE
      * through oneAnchor
@@ -150,8 +146,8 @@ contract OneAnchor is Reserve {
             didSend,
             "ONE send failed"
         );
+        emit Withdrawal(msg.sender, amount, finalONEValue);
     }
-
     /*
     * Exchanges aUST and UST based on the price feed values
     * Since this happens through oracles, we need to make sure gains form aUST outpace drainage
@@ -179,8 +175,6 @@ contract OneAnchor is Reserve {
             payUST(msg.sender, outputTokenAmount);
         }
     }
-
-
     /**
      * Returns Pair exchange rate
      * Forward means that if a pair is TOKENA / TOKENB,
@@ -195,7 +189,6 @@ contract OneAnchor is Reserve {
         (, int256 price, , , ) = cl.latestRoundData();
         return _amountOther * uint256(price) / 10 ** uint256(oracleDecimals);
     }
-
     /**
      * Inverse price operation on a price feed oracle
      * Backward means that if a pair is TOKENA / TOKENB,
@@ -210,7 +203,6 @@ contract OneAnchor is Reserve {
         (, int256 price, , , ) = cl.latestRoundData();
         return _amountUST / uint256(price) * 10 ** uint256(oracleDecimals);
     }
-
     /**
      * This function will output the correct amount of tokens required to rebalance the pool to 50/50 USD value
      * The first value in the return array represents the amount of aUST to bridge, and the second the amount of UST to bridge
@@ -233,18 +225,18 @@ contract OneAnchor is Reserve {
             uint256 difference =  USTBalance - aUSTAmountInUST;
             return [0 , difference/2];
         }
-
     }
-
      /**
      * This function will output the total 
-     * dpeosited amount an account has in UST
+     * deposited amount an account has in One
      */
     function getBalance() public view returns(uint) {
         uint balance = wAUST.balanceOf(msg.sender);
         // Calculate the amount of UST that the user has deposited
         uint256 aUSTAmountInUST =  getForwardValueFromOracle(balance, priceFeedUstaUst);
-        return aUSTAmountInUST;
+        // Calculate the amount of ONE that the user has deposited
+        uint256 USTAmountInOne =  getForwardValueFromOracle(aUSTAmountInUST, priceFeedOneUsd);
+        return USTAmountInOne;
     }
 
 }
