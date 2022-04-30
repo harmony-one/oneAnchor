@@ -1,4 +1,5 @@
 .DS_Store
+logs.log
 build/
 cache/
 node_modules
