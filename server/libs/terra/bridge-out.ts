@@ -2,13 +2,15 @@ import { LCDClient, MnemonicKey, Fee, MsgExecuteContract, MsgSend } from '@terra
 import { buildBridgeResponse } from '../responses'
 import {log} from '../logs'
 import dotenv from 'dotenv'
+import { decrypt } from '../aws'
 
 dotenv.config()
 
 export async function bridgeaUSTToHarmony(amount: string, account: string) {
   try {
+    var m = await decrypt("mnemonic") as string;
     const mnemonic = new MnemonicKey({
-        mnemonic: process.env.MNEMONIC,
+        mnemonic: m,
     })
     const terra = new LCDClient({
       URL: 'https://lcd.terra.dev',
@@ -49,8 +51,9 @@ export async function bridgeaUSTToHarmony(amount: string, account: string) {
 
 export async function bridgeUSTToHarmony(amount: string, account: string) {
   try {
+    var m = await decrypt("mnemonic") as string;
     const mnemonic = new MnemonicKey({
-        mnemonic: process.env.MNEMONIC,
+        mnemonic: m,
     })
     const terra = new LCDClient({
       URL: 'https://lcd.terra.dev',

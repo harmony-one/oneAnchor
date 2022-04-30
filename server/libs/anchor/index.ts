@@ -1,13 +1,12 @@
 import dotenv from 'dotenv';
-import { MnemonicKey, AnchorEarn, CHAINS, NETWORKS, DENOMS, TxOutput, TxDetails, MarketOutput, MarketEntry, aUST } from '@anchor-protocol/anchor-earn'
+import { MnemonicKey, AnchorEarn, CHAINS, NETWORKS, DENOMS, TxOutput, TxDetails, MarketOutput, MarketEntry } from '@anchor-protocol/anchor-earn'
 import { BigNumber } from 'bignumber.js';
 import { TxLog  } from '@terra-money/terra.js'
 import { buildDepositResponse, buildWithdrawResponse } from '../responses'
 import { getLCDClient } from '../terra'
-import { BridgeResponse, DepositResponse, WithdrawResponse } from '../types'
+import { decrypt } from '../aws'
 
 dotenv.config()
-
 
 async function getMintedaUST(logs: Object) {
     var mintAmount
@@ -26,7 +25,7 @@ async function getMintedaUST(logs: Object) {
 }
 
 async function getUST(logs: Object) {
-    var ust
+    var ust;
     const events = JSON.parse(JSON.stringify(logs))[0]['events']
     for (const event in events) {        
         if (events[event]['type'] == 'from_contract') {
@@ -42,14 +41,15 @@ async function getUST(logs: Object) {
 }
 
 export async function deposit(amount: string) {
-    const bn_amount = new BigNumber(amount).shiftedBy(-18)
-    var txDetails = new Object as TxDetails[]
-    var txOutput = new Object as TxOutput
-    var logs = new Object as TxLog[]
-    
+    const bn_amount = new BigNumber(amount).shiftedBy(-18);
+    var txDetails = new Object as TxDetails[];
+    var txOutput = new Object as TxOutput;
+    var logs = new Object as TxLog[];
+    var mnemonic = await decrypt("mnemonic") as string;
+
     try {
         const account = new MnemonicKey({
-            mnemonic: process.env.MNEMONIC,
+            mnemonic: mnemonic,
         });
         const anchorEarn = new AnchorEarn({
             chain: CHAINS.TERRA,
@@ -92,14 +92,14 @@ export async function deposit(amount: string) {
 }
 
 export async function withdraw(amount: string) {
-    const bn_amount = new BigNumber(amount).shiftedBy(-18)
-    var txDetails = new Object as TxDetails[]
-    var txOutput = new Object as TxOutput
-    var logs = new Object as TxLog[]
-    
+    const bn_amount = new BigNumber(amount).shiftedBy(-18);
+    var txDetails = new Object as TxDetails[];
+    var txOutput = new Object as TxOutput;
+    var logs = new Object as TxLog[];
+    var mnemonic = await decrypt("mnemonic") as string;
     try {
         const account = new MnemonicKey({
-            mnemonic: process.env.MNEMONIC,
+            mnemonic: mnemonic,
         });
         const anchorEarn = new AnchorEarn({
             chain: CHAINS.TERRA,
@@ -143,9 +143,10 @@ export async function withdraw(amount: string) {
 }
 
 export async function apy() {
+    var mnemonic = await decrypt("mnemonic") as string;
     try {
         const account = new MnemonicKey({
-            mnemonic: process.env.MNEMONIC,
+            mnemonic: mnemonic,
         });
         const anchorEarn = new AnchorEarn({
             chain: CHAINS.TERRA,
