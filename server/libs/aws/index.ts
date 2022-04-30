@@ -1,13 +1,13 @@
 import { KMS } from 'aws-sdk';
+import { AwsConfig } from '../types'
 
-interface AwsConfig {
-    accessKeyId: string;
-    secretAccessKey: string;
-    region: string;
-}
-  
 const getAwsConfig = () => {
-    return new KMS({ region: 'us-west-1' });
+    const awsConfig: AwsConfig = {
+        accessKeyId: '',
+        secretAccessKey: '',
+        region: 'us-west-1'
+    };
+    return new KMS(awsConfig);
 }
     
 const awsKMS = getAwsConfig();
