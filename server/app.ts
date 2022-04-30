@@ -7,7 +7,7 @@ var minutes = Number(process.env.DEAMON_MINUTES);
 var the_interval = minutes * 60 * 1000;
 
 setListeners();
+log("starting deamons");
 setInterval(function() {
-  log("starting deamons",null);
   balanceReserves();
 }, the_interval);

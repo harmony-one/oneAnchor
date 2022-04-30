@@ -21,7 +21,7 @@ export async function decrypt(buffer: string) {
             if (err) {
                 reject(err);
             } else {
-                resolve(data.Plaintext.toString);
+                resolve(data.Plaintext!.toString);
             }
         });
     });

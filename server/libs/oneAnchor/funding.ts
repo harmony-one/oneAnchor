@@ -6,6 +6,8 @@ import {withdrawAUSTFromReserves} from './balancing'
 import {getExchangeRate, getAUSTbalance, getUSTbalance} from '../terra'
 import 'dotenv/config'
 
+const hmyOneAnchorContractAddress = process.env.HMY_ONE_ANCHOR_CONTRACT_ADDRESS;
+
 export async function getAUST(amount: number) {
     log("calling getAUST", [["amount",amount.toString(),"number"]]);
     let aUSTbalance = await getAUSTbalance();
@@ -13,7 +15,7 @@ export async function getAUST(amount: number) {
     if (amount * 0.75 > aUSTbalance) { // there are enough aUST in Anchor 
         // bridge from terra aUST to wrapped aUST
         // in the reserves contract wallet
-        bridgeaUSTToHarmony(amount.toString(), process.env.HMY_ONE_ANCHOR_CONTRACT_ADDRESS);
+        bridgeaUSTToHarmony(amount.toString(), hmyOneAnchorContractAddress!);
         updateAUST(amount * -1); //on success
     } else if (amount * 0.75 > aUSTbalance * exchangeRate) { // there is enough UST in Anchor
         log("Making deposit in anchor", [["amount",amount.toString(),"number"]]);
@@ -32,7 +34,7 @@ export async function getUST(amount: number) {
     if (amount * 0.75 > USTbalance) { // there are enough UST in Anchor 
         log("bridging UST to smart contract", [["amount",amount.toString(),"number"]]);
         // bridge UST from Terra to Harmony contract
-        bridgeUSTToHarmony(amount.toString(), process.env.HMY_ONE_ANCHOR_CONTRACT_ADDRESS);
+        bridgeUSTToHarmony(amount.toString(), hmyOneAnchorContractAddress!);
         updateUST(amount * -1); //on success
     } else if (amount * 0.75 > USTbalance / exchangeRate) { // there is enough aUST in Anchor
         log("Withdrawing from anchor", [["amount",amount.toString(),"number"]]);

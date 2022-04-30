@@ -7,13 +7,13 @@ import 'dotenv/config'
 
 const provider = new ethers.providers.JsonRpcProvider(process.env.HMY_RPC_PROVIDER)
 let contractAddress = process.env.HMY_ONE_ANCHOR_CONTRACT_ADDRESS;
-let contract = new ethers.Contract(contractAddress, abi, provider);
+let contract = new ethers.Contract(contractAddress!, abi, provider);
 
 // check if there are funds that need
 // to be sent to reserves
 function checkForPendingLoad() {
     var data = getData();
-    log("calling checkForPendingLoad",null);
+    log("calling checkForPendingLoad");
     if (data.ust > 0) {
         getUST(data.ust);
     }

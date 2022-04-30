@@ -7,15 +7,17 @@ let name = path.resolve(__dirname, './' + process.env.LOGGING_FILENAME)
 var log_file = fs.createWriteStream(name, {flags : 'w'});
 var log_stdout = process.stdout;
 
-function addParameters(params: [[string, string, string]]) {
+function addParameters(params?: [[string, string, string]]) {
     var result = "";
-    for (const param in params) {
-        result += " " + param[0] + " " + param[1] + " " + param[2];
+    if (params != undefined) {
+        for (const param in params) {
+            result += " " + param[0] + " " + param[1] + " " + param[2];
+        }
     }
     return result;
 }
 
-export function log(message: string, params: [[string, string, string]]) {
+export function log(message: string, params?: [[string, string, string]]) {
     let date_ob = new Date();
     let date = ("0" + date_ob.getDate()).slice(-2);
     let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
