@@ -130,7 +130,7 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
             terraAddress
         );
         removeFromUSTReserve(amount);
-        OperatorWithdraw(terraAddress, "ust", amount);
+        emit OperatorWithdraw(address(uint160(uint256(terraAddress))), "ust", amount);
         return true;
     }
     function withdrawAUSTOperator(uint256 amount, bytes32 terraAddress)
@@ -143,7 +143,7 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
             terraAddress
         );
         removeFromaUSTReserve(amount);
-        OperatorWithdraw(terraAddress, "aust", amount);
+        emit OperatorWithdraw(address(uint160(uint256(terraAddress))), "aust", amount);
         return true;
     }
     //These deposit functions will require that the operators have approved this contract
@@ -159,7 +159,7 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
         );
         require(didTransfer == true, "Transfer failed");
         addToUSTReserve(amount);
-        OperatorDeposit(msg.sender, "ust", amount);
+        emit OperatorDeposit(msg.sender, "ust", amount);
         return didTransfer;
     }
     function depositAUSTOperator(uint256 amount)
@@ -174,18 +174,18 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
         );
         require(didTransfer == true, "Transfer failed");
         addToaUSTReserve(amount);
-        OperatorDeposit(msg.sender, "aust", amount);
+        emit OperatorDeposit(msg.sender, "aust", amount);
         return didTransfer;
     }
     /*
      * Send ONEs to address.
      */
-    function sendViaCall(address payable _to, uint256 amount)
+    function sendViaCall(address payable _to, uint256 _amount)
         internal
         returns (bool)
     {
-        (bool sent, ) = _to.call{value: amount}("");
-        SentOne(_to, _amount);
+        (bool sent, ) = _to.call{value: _amount}("");
+        emit SentOne(_to, _amount);
         return sent;
     }
     /**
@@ -199,6 +199,6 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
      */
     function setOperatorRole(address owner) external onlyOwner {
         _setupRole(OPERATOR_ROLE, owner);
-        OperatorRoleSet(owner);
+        emit OperatorRoleSet(owner);
     }
 }

@@ -3,11 +3,10 @@ const { ethers } = require("hardhat");
 
 async function main() {
     const OneAnchor = await ethers.getContractFactory("OneAnchor");
-    const oneAnchor = await OneAnchor.deploy();
-    await oneAnchor.initialize();
-    let accounts = await ethers.getSigners();
-    await oneAnchor.setOperatorRole(accounts[0].address);
-
+    const oneAnchor = await OneAnchor.attach(
+        process.env.ONE_ANCHOR_CONTRACT
+    );
+    await oneAnchor.setOperatorRole("");
     console.log("OneAnchor deployed to:", oneAnchor.address);
 }   
 
