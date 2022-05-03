@@ -6,7 +6,9 @@ OneAnchor handles most of its logic from a set of Smart Contracts that manage al
 
 ![alt text](https://bafkreifixudbtfcshtlcm3bzlnybqzd3ybu6lqhfxkzwh4hchirsn3f7uq.ipfs.nftstorage.link/)
 
-#### Current Status
+### Current Status
+
+#### May 02, 2022
 
 - Contracts and servers ready for auditing, process will take a few weeks, but they should be ready for open beta before the end of the month. We'll be in private beta until all the security audits are complete.
 - INCOME Webapp is ready and will be tested during private beta. Some improvements will be implemented in the next couple weeks.
