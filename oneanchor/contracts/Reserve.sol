@@ -60,14 +60,14 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
         );
         _;
     }
-    function __Reserve_init(address _wAUST, address _wUST)
+    function __Reserve_init(address _wUST, address _wAUST)
         internal
         onlyInitializing
     {
         __Ownable_init();
         __ReentrancyGuard_init();
-        wAUST = IERC20Upgradeable(_wAUST);
         wUST = IERC20Upgradeable(_wUST);
+        wAUST = IERC20Upgradeable(_wAUST);
     }
     /*
      * Modify Reserve amounts.
@@ -167,7 +167,7 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
         onlyOperator
         returns (bool)
     {
-        bool didTransfer = wUST.transferFrom(
+        bool didTransfer = wAUST.transferFrom(
             msg.sender,
             address(this),
             amount
