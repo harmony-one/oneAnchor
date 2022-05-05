@@ -2,14 +2,14 @@ require("dotenv").config();
 const { ethers } = require("hardhat");
 
 async function main() {
-    const Reserve = await ethers.getContractFactory("Reserve");
-    const reserve = await Reserve.attach(
-        process.env.HMY_RESERVE_CONTRACT
-    );
-
     const OneAnchor = await ethers.getContractFactory("OneAnchor");
-    const oneAnchor = await OneAnchor.deploy();
-    oneAnchor.__OneAnchor_init(reserve.address);
+    // const oneAnchor = await OneAnchor.deploy();
+    // await oneAnchor.initialize();
+
+    const oneAnchor = await upgrades.deployProxy(OneAnchor, [], { initializer: "initialize" });
+
+    let accounts = await ethers.getSigners();
+    await oneAnchor.setOperatorRole(accounts[0].address);
 
     console.log("OneAnchor deployed to:", oneAnchor.address);
 }   
