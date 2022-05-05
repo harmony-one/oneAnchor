@@ -38,7 +38,7 @@ contract OneAnchor is Reserve {
 
     function __OneAnchor_init() internal onlyInitializing {
         // addresses
-        clONEUSD = 0xcEe686F89bc0dABAd95AEAAC980aE1d97A075FAD;
+        clONEUSD = 0xdCD81FbbD6c4572A69a534D8b8152c562dA8AbEF;
         clUSTaUST = 0xDa543b5eC7353C289A633aF289c0e5a7321f8b0f;
         uniswapV2Router02 = 0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506;
         wONE = 0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a;
