@@ -99,7 +99,7 @@ contract OneAnchor is Reserve {
 
         //Double check slippage, probably redundant
         require(
-            finalUSTValue > OneAmountInUST * 95 / 100,
+            finalUSTValue >= OneAmountInUST * 95 / 100,
             "Slippage on Swap Too Large"
         );
 
