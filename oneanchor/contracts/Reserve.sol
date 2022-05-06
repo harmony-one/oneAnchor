@@ -92,28 +92,28 @@ contract Reserve is AccessControlUpgradeable, OwnableUpgradeable, ReentrancyGuar
      * Send assets to users when they deposit
      */
     function payAUST(address to, uint256 amount) internal returns (bool) {
-        bool didTransfer = wAUST.transferFrom(address(this), to, amount);
+        bool didTransfer = wAUST.transfer(to, amount);
         require(didTransfer == true, "Payment failed");
         removeFromaUSTReserve(amount);
         emit Payment(to, "aust", amount);
         return didTransfer;
     }
     function payUST(address to, uint256 amount) internal returns (bool) {
-        bool didTransfer = wUST.transferFrom(address(this), to, amount);
+        bool didTransfer = wUST.transfer(to, amount);
         require(didTransfer == true, "Payment failed");
         removeFromaUSTReserve(amount);
         emit Payment(to, "ust", amount);
         return didTransfer;
     }
     function takeAUST(address from, uint256 amount) internal returns (bool) {
-        bool didTransfer = wAUST.transferFrom(from, address(this), amount);
+        bool didTransfer = wAUST.transfer(from, amount);
         require(didTransfer == true, "Payment failed");
         addToaUSTReserve(amount);
         emit TransferToReserve(from, "aust", amount);
         return didTransfer;
     }
     function takeUST(address from, uint256 amount) internal returns (bool) {
-        bool didTransfer = wUST.transferFrom(from, address(this), amount);
+        bool didTransfer = wUST.transfer(from, amount);
         require(didTransfer == true, "Payment failed");
         addToUSTReserve(amount);
         emit TransferToReserve(from, "ust", amount);
