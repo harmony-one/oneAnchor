@@ -201,7 +201,7 @@ contract OneAnchor is Reserve {
     {
         uint8 oracleDecimals = cl.decimals();
         (, int256 price, , , ) = cl.latestRoundData();
-        return _amountUST / uint256(price) * 10 ** uint256(oracleDecimals);
+        return  _amountUST * (10 ** uint256(oracleDecimals)) / uint256(price);
     }
     /**
      * This function will output the correct amount of tokens required to rebalance the pool to 50/50 USD value
