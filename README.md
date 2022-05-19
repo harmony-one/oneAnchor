@@ -8,6 +8,10 @@ OneAnchor handles most of its logic from a set of Smart Contracts that manage al
 
 ### Current Status
 
+#### May 19, 2022
+
+Based on current event this repo has been deprecated
+
 #### May 02, 2022
 
 - Contracts and servers ready for auditing, process will take a few weeks, but they should be ready for open beta before the end of the month. We'll be in private beta until all the security audits are complete.
